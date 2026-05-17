@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearch } from "@tanstack/react-router";
 import {
   Image as ImageIcon,
@@ -357,43 +357,51 @@ function UserTemplateDetail({ template: t }: { template: template.RuntimeTemplat
   const baseURL = baseURLQuery.data ?? "";
   const deleteMut = useDeleteUserTemplate();
 
-  const idx = Math.max(0, Math.min(slideIndex, t.slides.length - 1));
-  const slide = t.slides[idx];
-
   function onDelete() {
     if (!window.confirm(`Delete template "${t.name}"? This cannot be undone.`)) return;
     deleteMut.mutate(t.id);
   }
 
+  const slideUrls = useMemo(
+    () => t.slides.map((s) => `${baseURL}/user-templates/${t.slug}/${s.filename}`),
+    [baseURL, t.slides, t.slug],
+  );
+
+  // Fake meta only for CanvasView sizing/grid
+  const fakeMeta = useMemo(
+    () => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      kind: (t.kind === "carousel" ? "carousel" : "single") as any,
+      id: `user-${t.id}`,
+      name: t.name,
+      description: t.description,
+      category: t.category,
+      aspectRatio: aspectFromSize(t.size),
+      size: t.size,
+      schema: null as never,
+      defaultProps: {} as never,
+      defaultShared: {} as never,
+      defaultSlides: t.slides as never,
+      minSlides: 1,
+      maxSlides: 50,
+      sharedSchema: null as never,
+      slideSchema: null as never,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component: (() => null) as any,
+    }),
+    [t],
+  );
+
   return (
     <div className="flex flex-1 overflow-hidden">
-      <div className="flex flex-1 flex-col overflow-hidden bg-black/30">
-        <div className="relative flex flex-1 items-center justify-center overflow-hidden p-6">
-          {baseURL && slide ? (
-            <SlidePreview
-              src={`${baseURL}/user-templates/${t.slug}/${slide.filename}`}
-              size={t.size}
-            />
-          ) : null}
-        </div>
-        {t.slides.length > 1 ? (
-          <div className="flex shrink-0 items-center justify-center gap-2 border-t border-white/[0.06] px-4 py-2">
-            {t.slides.map((s, i) => (
-              <button
-                key={s.filename}
-                type="button"
-                onClick={() => setSlideIndex(i)}
-                className={`h-7 min-w-[28px] rounded-md px-2 text-[12px] font-medium tabular-nums transition-colors ${
-                  i === idx
-                    ? "bg-white/[0.14] text-white"
-                    : "text-white/55 hover:bg-white/[0.06] hover:text-white/85"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-        ) : null}
+      <div className="flex flex-1 overflow-hidden bg-black/30">
+        <CanvasView
+          meta={fakeMeta}
+          payload={{}}
+          slideIndex={slideIndex}
+          onSlideChange={setSlideIndex}
+          slideUrls={slideUrls}
+        />
       </div>
 
       <aside className="w-[320px] shrink-0 overflow-y-auto border-l border-white/[0.06] px-4 py-4">
@@ -454,30 +462,14 @@ function UserTemplateDetail({ template: t }: { template: template.RuntimeTemplat
   );
 }
 
-function SlidePreview({ src, size }: { src: string; size: { width: number; height: number } }) {
-  return (
-    <div
-      className="overflow-hidden rounded-lg shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] ring-0.5 ring-white/[0.08]"
-      style={{
-        width: Math.min(size.width, 720),
-        height: Math.min(size.width, 720) * (size.height / size.width),
-      }}
-    >
-      <iframe
-        src={src}
-        title="Slide preview"
-        sandbox="allow-scripts"
-        style={{
-          width: size.width,
-          height: size.height,
-          transform: `scale(${Math.min(720 / size.width, 1)})`,
-          transformOrigin: "top left",
-          border: 0,
-          background: "#000",
-        }}
-      />
-    </div>
-  );
+function aspectFromSize(size: { width: number; height: number }): "1:1" | "9:16" | "16:9" | "1.91:1" | "4:5" {
+  const r = size.width / size.height;
+  if (Math.abs(r - 1) < 0.01) return "1:1";
+  if (Math.abs(r - 9 / 16) < 0.05) return "9:16";
+  if (Math.abs(r - 16 / 9) < 0.05) return "16:9";
+  if (Math.abs(r - 1.91) < 0.05) return "1.91:1";
+  if (Math.abs(r - 4 / 5) < 0.05) return "4:5";
+  return "1:1";
 }
 
 function Chip({ children }: { children: React.ReactNode }) {
