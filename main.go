@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/akira-io/desktopkit/paths"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -34,7 +35,7 @@ import (
 var assets embed.FS
 
 func main() {
-	dataDir, err := userDataDir()
+	dataDir, err := paths.For("hyperion").Config()
 	if err != nil {
 		log.Fatalf("data dir: %v", err)
 	}
@@ -127,10 +128,3 @@ func main() {
 	}
 }
 
-func userDataDir() (string, error) {
-	base, err := os.UserConfigDir()
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(base, "hyperion"), nil
-}
