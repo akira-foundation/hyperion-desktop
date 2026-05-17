@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"hyperion-desktop/internal/domain/template"
+	"hyperion-desktop/internal/infrastructure/clipath"
 	"hyperion-desktop/internal/infrastructure/usertemplates"
 	"hyperion-desktop/internal/ports"
 )
@@ -307,27 +308,7 @@ func buildTemplatePrompt(in GenerateTemplateInput, refPaths []string) string {
 }
 
 func resolveClaudeBinary() (string, error) {
-	if p, err := exec.LookPath("claude"); err == nil {
-		return p, nil
-	}
-	home, err := os.UserHomeDir()
-	if err == nil {
-		for _, c := range []string{
-			filepath.Join(home, ".local/bin/claude"),
-			filepath.Join(home, ".claude/local/claude"),
-			filepath.Join(home, "bin/claude"),
-		} {
-			if info, err := os.Stat(c); err == nil && !info.IsDir() {
-				return c, nil
-			}
-		}
-	}
-	for _, c := range []string{"/usr/local/bin/claude", "/opt/homebrew/bin/claude"} {
-		if info, err := os.Stat(c); err == nil && !info.IsDir() {
-			return c, nil
-		}
-	}
-	return "", errors.New("claude CLI binary not found")
+	return clipath.ResolveClaude()
 }
 
 func (s *TemplateService) RenderUserCarousel(ctx context.Context, id string) ([][]byte, error) {

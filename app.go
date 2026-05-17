@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -104,14 +105,37 @@ func (a *App) RevealInFinder(path string) error {
 	if path == "" {
 		return fmt.Errorf("path required")
 	}
-	return exec.Command("open", "-R", path).Run()
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", "-R", path).Run()
+	case "windows":
+		return exec.Command("explorer", "/select,"+path).Run()
+	default: // linux + others
+		return exec.Command("xdg-open", filepathDir(path)).Run()
+	}
 }
 
 func (a *App) OpenPath(path string) error {
 	if path == "" {
 		return fmt.Errorf("path required")
 	}
-	return exec.Command("open", path).Run()
+	switch runtime.GOOS {
+	case "darwin":
+		return exec.Command("open", path).Run()
+	case "windows":
+		return exec.Command("cmd", "/c", "start", "", path).Run()
+	default:
+		return exec.Command("xdg-open", path).Run()
+	}
+}
+
+func filepathDir(p string) string {
+	for i := len(p) - 1; i >= 0; i-- {
+		if p[i] == '/' || p[i] == '\\' {
+			return p[:i]
+		}
+	}
+	return "."
 }
 
 func (a *App) ExportPathsAsZIP(paths []string, suggestedName string) (string, error) {
