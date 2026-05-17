@@ -1,54 +1,53 @@
 package clipath
 
 import (
-	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
+
+	"github.com/akira-io/desktopkit/shell"
 )
 
-// ResolveClaude returns the absolute path to the `claude` CLI binary
-// across macOS, Linux, and Windows.
 func ResolveClaude() (string, error) {
-	names := []string{"claude"}
-	if runtime.GOOS == "windows" {
-		names = []string{"claude.exe", "claude.cmd", "claude"}
+	candidates := shell.NewCandidates()
+	for _, name := range claudeNames() {
+		candidates = candidates.WithName(name)
 	}
-	for _, n := range names {
-		if p, err := exec.LookPath(n); err == nil {
-			return p, nil
-		}
+	for _, path := range claudeCandidatePaths() {
+		candidates = candidates.WithCandidate(path)
 	}
-	for _, c := range claudeCandidates() {
-		if info, err := os.Stat(c); err == nil && !info.IsDir() {
-			return c, nil
-		}
+	resolved, err := candidates.Resolve()
+	if err != nil {
+		return "", err
 	}
-	return "", errors.New("claude CLI binary not found (install Claude Code or add to PATH)")
+	return resolved.AbsolutePath(), nil
 }
 
-func claudeCandidates() []string {
+func claudeNames() []string {
+	if runtime.GOOS == "windows" {
+		return []string{"claude.exe", "claude.cmd", "claude"}
+	}
+	return []string{"claude"}
+}
+
+func claudeCandidatePaths() []string {
 	home, _ := os.UserHomeDir()
 	switch runtime.GOOS {
 	case "windows":
-		appData := os.Getenv("APPDATA")
-		localAppData := os.Getenv("LOCALAPPDATA")
-		programFiles := os.Getenv("ProgramFiles")
 		out := []string{}
-		if localAppData != "" {
+		if localAppData := os.Getenv("LOCALAPPDATA"); localAppData != "" {
 			out = append(out,
 				filepath.Join(localAppData, "Programs", "claude", "claude.exe"),
 				filepath.Join(localAppData, "Programs", "claude-code", "claude.exe"),
 			)
 		}
-		if appData != "" {
+		if appData := os.Getenv("APPDATA"); appData != "" {
 			out = append(out,
 				filepath.Join(appData, "npm", "claude.cmd"),
 				filepath.Join(appData, "npm", "claude.exe"),
 			)
 		}
-		if programFiles != "" {
+		if programFiles := os.Getenv("ProgramFiles"); programFiles != "" {
 			out = append(out, filepath.Join(programFiles, "claude", "claude.exe"))
 		}
 		return out
@@ -62,7 +61,7 @@ func claudeCandidates() []string {
 			)
 		}
 		return append(out, "/usr/local/bin/claude", "/usr/bin/claude")
-	default: // darwin and others
+	default:
 		out := []string{}
 		if home != "" {
 			out = append(out,
