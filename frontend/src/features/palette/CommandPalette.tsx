@@ -168,7 +168,7 @@ export function CommandPalette({ open, onClose }: Props) {
       onClick={onClose}
     >
       <div
-        className="mt-[12vh] flex w-[640px] max-h-[70vh] flex-col overflow-hidden rounded-xl bg-(--color-background) shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] ring-0.5 ring-white/[0.08]"
+        className="mt-[12vh] flex w-[640px] max-h-[70vh] flex-col overflow-hidden rounded-[20px] bg-(--color-popover)/95 backdrop-blur-2xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.08),0_30px_80px_-20px_rgba(0,0,0,0.7)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2.5">

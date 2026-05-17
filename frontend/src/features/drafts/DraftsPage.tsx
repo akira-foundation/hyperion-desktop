@@ -37,8 +37,8 @@ export function DraftsPage() {
   }
 
   return (
-    <div className="flex h-full">
-      <aside className="w-[280px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-3 py-4">
+    <div className="flex h-full gap-2">
+      <aside className="w-[280px] shrink-0 overflow-y-auto px-3 py-4">
         <div className="mb-3 flex items-center justify-between px-2">
           <h1 className="text-[15px] font-semibold text-white">Drafts</h1>
           <button
@@ -82,7 +82,7 @@ export function DraftsPage() {
       {selected ? (
         <DraftEditor key={selected.id} draft={selected} />
       ) : (
-        <div className="flex flex-1 items-center justify-center bg-black/30 text-[13px] text-white/45">
+        <div className="flex flex-1 items-center justify-center rounded-[20px] bg-black/30 text-[13px] text-white/45 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
           {drafts.length === 0 ? "Click + to create your first draft." : "Select a draft."}
         </div>
       )}
@@ -122,7 +122,7 @@ function DraftEditor({ draft: d }: { draft: draft.Draft }) {
   const charCount = body.length;
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-black/20">
+    <div className="flex flex-1 flex-col overflow-hidden bg-black/20 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
       <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] px-5 py-3">
         <input
           type="text"

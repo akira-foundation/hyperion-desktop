@@ -67,8 +67,8 @@ export function AssetsPage() {
   }
 
   return (
-    <div className="flex h-full">
-      <aside className="w-[360px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-4 py-5">
+    <div className="flex h-full gap-2">
+      <aside className="w-[360px] shrink-0 overflow-y-auto px-4 py-5">
         <h1 className="text-[18px] font-semibold tracking-tight text-white">Assets</h1>
         <p className="mt-1 text-[12px] text-white/55">
           Generate image ingredients. Drop into templates as hero, background, decoration.
@@ -179,7 +179,7 @@ export function AssetsPage() {
         </div>
       </aside>
 
-      <div className="flex-1 overflow-auto px-6 py-6">
+      <div className="flex-1 overflow-auto rounded-[20px] bg-black/30 px-6 py-6 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
         <LibraryHeader assets={assets} />
 
         {assets.length === 0 ? (

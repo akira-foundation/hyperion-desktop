@@ -12,8 +12,8 @@ export function SkillsPage() {
   const selected = skills.find((s) => s.id === selectedId);
 
   return (
-    <div className="flex h-full">
-      <aside className="w-[300px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-3 py-4">
+    <div className="flex h-full gap-2">
+      <aside className="w-[300px] shrink-0 overflow-y-auto px-3 py-4">
         <div className="mb-3 px-2">
           <h2 className="text-[15px] font-semibold text-white">Skills</h2>
           <p className="mt-0.5 text-[11.5px] text-white/55">
@@ -56,7 +56,7 @@ export function SkillsPage() {
 
 function EmptyDetail() {
   return (
-    <div className="flex flex-1 items-center justify-center bg-black/30 text-[13px] text-white/45">
+    <div className="flex flex-1 items-center justify-center rounded-[20px] bg-black/30 text-[13px] text-white/45 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
       Select a skill to begin.
     </div>
   );
@@ -82,7 +82,7 @@ function SkillDetail({ skill: s }: { skill: skill.Skill }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-black/30">
+    <div className="flex flex-1 flex-col overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
       <header className="border-b border-white/[0.06] px-6 py-5">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -110,8 +110,8 @@ function SkillDetail({ skill: s }: { skill: skill.Skill }) {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex w-[380px] shrink-0 flex-col gap-3 border-r border-white/[0.06] px-5 py-5">
+      <div className="flex flex-1 overflow-hidden gap-2">
+        <div className="flex w-[380px] shrink-0 flex-col gap-3 px-5 py-5">
           <label className="block">
             <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">
               Project folder

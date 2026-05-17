@@ -183,8 +183,8 @@ export function StudioPage() {
   const idx = Math.max(0, Math.min(slideIndex, slidesCount - 1));
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <aside className="w-[380px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-4 py-5">
+    <div className="flex h-full overflow-hidden gap-2">
+      <aside className="w-[380px] shrink-0 overflow-y-auto px-4 py-5">
         <h1 className="text-[18px] font-semibold tracking-tight text-white">Studio</h1>
         <p className="mt-1 text-[12px] text-white/55">
           Describe your idea, pick a template, let AI shape it into branded assets.
@@ -357,7 +357,7 @@ export function StudioPage() {
         ) : null}
       </aside>
 
-      <div className="flex flex-1 overflow-hidden bg-black/30">
+      <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
         <CanvasView
           meta={template}
           payload={payload ?? defaultPayload(template)}

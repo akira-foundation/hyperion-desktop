@@ -159,7 +159,7 @@ function Toolbar({
 }) {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
-      <div className="pointer-events-auto flex gap-1 rounded-md bg-black/40 p-1 backdrop-blur-md ring-0.5 ring-white/[0.06]">
+      <div className="pointer-events-auto flex gap-1 rounded-xl bg-black/35 p-1 backdrop-blur-xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07)]">
         {carousel ? (
           <>
             <ToolbarButton
@@ -180,7 +180,7 @@ function Toolbar({
         ) : null}
       </div>
 
-      <div className="pointer-events-auto flex items-center gap-1 rounded-md bg-black/40 p-1 backdrop-blur-md ring-0.5 ring-white/[0.06]">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-xl bg-black/35 p-1 backdrop-blur-xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07)]">
         <ToolbarButton onClick={onZoomOut} title="Zoom out">
           <Minus className="h-3.5 w-3.5" />
         </ToolbarButton>
@@ -212,7 +212,7 @@ function ToolbarButton({
       onClick={onClick}
       title={title}
       className={cn(
-        "flex h-7 w-7 items-center justify-center rounded-md transition-colors",
+        "flex h-7 w-7 items-center justify-center rounded-[10px] transition-colors",
         active
           ? "bg-white/[0.14] text-white"
           : "text-white/65 hover:bg-white/[0.08] hover:text-white",

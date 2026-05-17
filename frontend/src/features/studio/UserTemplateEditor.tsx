@@ -104,8 +104,8 @@ export function UserTemplateEditor({ template: t, header }: Props) {
 
   if (codeMode) {
     return (
-      <div className="flex h-full overflow-hidden">
-        <aside className="flex w-[640px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06]">
+      <div className="flex h-full overflow-hidden gap-2">
+        <aside className="flex w-[640px] shrink-0 flex-col overflow-hidden">
           <div className="flex shrink-0 items-center justify-between border-b border-white/[0.06] px-3 py-2">
             <div className="flex items-center gap-2 text-[12.5px] text-white/85">
               <Code2 className="h-4 w-4 text-(--color-primary)" />
@@ -157,7 +157,7 @@ export function UserTemplateEditor({ template: t, header }: Props) {
           </div>
         </aside>
 
-        <div className="flex flex-1 overflow-hidden bg-black/30">
+        <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
           <CanvasView
             meta={fakeMeta}
             payload={{}}
@@ -171,8 +171,8 @@ export function UserTemplateEditor({ template: t, header }: Props) {
   }
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <aside className="w-[380px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-4 py-5">
+    <div className="flex h-full overflow-hidden gap-2">
+      <aside className="w-[380px] shrink-0 overflow-y-auto px-4 py-5">
         {header}
 
 
@@ -217,7 +217,7 @@ export function UserTemplateEditor({ template: t, header }: Props) {
         ) : null}
       </aside>
 
-      <div className="flex flex-1 overflow-hidden bg-black/30">
+      <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
         <CanvasView
           meta={fakeMeta}
           payload={{}}

@@ -10,6 +10,17 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import { getTemplate, templatesByCategory } from "@/templates/registry";
 import type {
   AnyTemplateMeta,
@@ -63,112 +74,22 @@ export function TemplatesPage() {
 
   const [aiCreateOpen, setAiCreateOpen] = useState(false);
 
+  const picker = (
+    <TemplatePicker
+      groups={groups}
+      userTemplates={userTemplates}
+      selection={selection}
+      onSelect={setSelection}
+      onCreateWithAI={() => setAiCreateOpen(true)}
+      onImport={onImport}
+      importPending={importMut.isPending}
+      importError={importMut.error as Error | null}
+    />
+  );
+
   return (
-    <div className="flex h-full">
-      <aside className="w-[280px] shrink-0 overflow-y-auto border-r border-white/[0.06] px-3 py-4">
-        {groups.map((g, i) => (
-          <div key={g.category} className={i > 0 ? "mt-4" : ""}>
-            <h2 className="px-2 pb-1.5 text-[11px] font-medium uppercase tracking-wider text-white/45">
-              {g.category}
-            </h2>
-            <ul className="flex flex-col gap-px">
-              {g.items.map((t) => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ kind: "builtin", id: t.id })}
-                    className={`group flex w-full flex-col rounded-[8px] px-2.5 py-2 text-left transition-colors ${
-                      selection.kind === "builtin" && selection.id === t.id
-                        ? "bg-white/[0.07] text-white"
-                        : "text-white/75 hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5 text-[13px] font-medium">
-                      {t.name}
-                      {t.kind === "carousel" ? (
-                        <span className="rounded bg-white/[0.08] px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/60">
-                          Carousel
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="text-[11px] text-white/45">
-                      {t.aspectRatio} · {t.size.width}×{t.size.height}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-
-        <div className="mt-5 border-t border-white/[0.06] pt-4">
-          <div className="flex items-center justify-between px-2 pb-1.5">
-            <h2 className="text-[11px] font-medium uppercase tracking-wider text-white/45">
-              Your templates
-            </h2>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setAiCreateOpen(true)}
-                className="flex h-6 w-6 items-center justify-center rounded text-(--color-primary) hover:bg-white/[0.06]"
-                title="Create with Claude AI"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={onImport}
-                disabled={importMut.isPending}
-                className="flex h-6 w-6 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
-                title="Import template folder"
-              >
-                <Upload className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {userTemplates.length === 0 ? (
-            <p className="px-2 text-[11px] text-white/35">
-              {importMut.isPending ? "Importing..." : "No user templates yet. Run a skill or import a folder."}
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-px">
-              {userTemplates.map((t) => (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ kind: "user", id: t.id })}
-                    className={`group flex w-full flex-col rounded-[8px] px-2.5 py-2 text-left transition-colors ${
-                      selection.kind === "user" && selection.id === t.id
-                        ? "bg-white/[0.07] text-white"
-                        : "text-white/75 hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5 text-[13px] font-medium">
-                      {t.name}
-                      <span className="rounded bg-(--color-primary)/15 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-(--color-primary)">
-                        {t.source}
-                      </span>
-                    </span>
-                    <span className="text-[11px] text-white/45">
-                      {t.slides.length} slide{t.slides.length === 1 ? "" : "s"} · {t.size.width}×{t.size.height}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {importMut.error ? (
-            <div className="mx-2 mt-2 flex items-start gap-1.5 rounded-md bg-red-500/10 p-2 text-[11px] text-red-300 ring-0.5 ring-red-500/30">
-              <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-              <span>{(importMut.error as Error).message}</span>
-            </div>
-          ) : null}
-        </div>
-      </aside>
-
-      <Detail selection={selection} userTemplates={userTemplates} />
+    <div className="flex h-full gap-2">
+      <Detail selection={selection} userTemplates={userTemplates} picker={picker} />
 
       {aiCreateOpen ? (
         <AICreateModal
@@ -183,46 +104,210 @@ export function TemplatesPage() {
   );
 }
 
-function Detail({
-  selection,
+function TemplatePicker({
+  groups,
   userTemplates,
+  selection,
+  onSelect,
+  onCreateWithAI,
+  onImport,
+  importPending,
+  importError,
 }: {
-  selection: Selection;
+  groups: ReturnType<typeof templatesByCategory>;
   userTemplates: template.RuntimeTemplate[];
+  selection: Selection;
+  onSelect: (s: Selection) => void;
+  onCreateWithAI: () => void;
+  onImport: () => void;
+  importPending: boolean;
+  importError: Error | null;
 }) {
-  if (selection.kind === "user") {
-    const t = userTemplates.find((u) => u.id === selection.id);
-    if (!t) return <Empty />;
-    return <UserTemplateDetail template={t} />;
-  }
-  const meta = getTemplate(selection.id);
-  if (!meta) return <Empty />;
-  return <TemplateDetail meta={meta} />;
-}
+  const value =
+    selection.kind === "user" ? `user:${selection.id}` : `builtin:${selection.id}`;
 
-function Empty() {
+  function onChange(next: string) {
+    const [kind, id] = next.split(":");
+    if (kind === "user") onSelect({ kind: "user", id });
+    else onSelect({ kind: "builtin", id });
+  }
+
+  const [open, setOpen] = useState(false);
+
+  const currentLabel = useMemo(() => {
+    if (selection.kind === "user") {
+      const t = userTemplates.find((u) => u.id === selection.id);
+      return t ? `${t.name} (${t.slides.length}× · ${t.size.width}×${t.size.height})` : "Choose a template";
+    }
+    for (const g of groups) {
+      const t = g.items.find((x) => x.id === selection.id);
+      if (t) return `${t.name} (${t.aspectRatio} · ${t.size.width}×${t.size.height})`;
+    }
+    return "Choose a template";
+  }, [selection, groups, userTemplates]);
+
   return (
-    <div className="flex flex-1 items-center justify-center bg-black/30 text-[13px] text-white/45">
-      Select a template.
+    <div className="mb-4">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-white/45">
+          Template
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onCreateWithAI}
+            className="flex h-7 w-7 items-center justify-center rounded text-(--color-primary) hover:bg-white/[0.06]"
+            title="Create with Claude AI"
+          >
+            <Sparkles className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onImport}
+            disabled={importPending}
+            className="flex h-7 w-7 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
+            title="Import template folder"
+          >
+            <Upload className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            role="combobox"
+            aria-expanded={open}
+            className="flex h-8 w-full items-center justify-between rounded-md bg-white/[0.05] px-2.5 text-[12.5px] text-white outline-none ring-0.5 ring-white/[0.08] transition-colors hover:bg-white/[0.07] focus:ring-white/20 data-[state=open]:ring-white/20"
+          >
+            <span className="truncate">{currentLabel}</span>
+            <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-60" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+          <Command>
+            <CommandInput placeholder="Search templates..." />
+            <CommandList>
+              <CommandEmpty>No template matches.</CommandEmpty>
+              {groups.map((g) => (
+                <CommandGroup key={g.category} heading={g.category}>
+                  {g.items.map((t) => {
+                    const v = `builtin:${t.id}`;
+                    return (
+                      <CommandItem
+                        key={t.id}
+                        value={`${t.name} ${t.aspectRatio} ${g.category}`}
+                        onSelect={() => {
+                          onChange(v);
+                          setOpen(false);
+                        }}
+                      >
+                        <span className="flex-1 truncate">
+                          {t.name}{" "}
+                          <span className="text-white/40">
+                            ({t.aspectRatio} · {t.size.width}×{t.size.height})
+                          </span>
+                        </span>
+                        <Check
+                          className={cn(
+                            "h-3.5 w-3.5 text-(--color-primary)",
+                            value === v ? "opacity-100" : "opacity-0",
+                          )}
+                          strokeWidth={2.5}
+                        />
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              ))}
+              {userTemplates.length > 0 ? (
+                <CommandGroup heading="Your templates">
+                  {userTemplates.map((t) => {
+                    const v = `user:${t.id}`;
+                    return (
+                      <CommandItem
+                        key={t.id}
+                        value={`${t.name} ${t.category}`}
+                        onSelect={() => {
+                          onChange(v);
+                          setOpen(false);
+                        }}
+                      >
+                        <span className="flex-1 truncate">
+                          {t.name}{" "}
+                          <span className="text-white/40">
+                            ({t.slides.length}× · {t.size.width}×{t.size.height})
+                          </span>
+                        </span>
+                        <Check
+                          className={cn(
+                            "h-3.5 w-3.5 text-(--color-primary)",
+                            value === v ? "opacity-100" : "opacity-0",
+                          )}
+                          strokeWidth={2.5}
+                        />
+                      </CommandItem>
+                    );
+                  })}
+                </CommandGroup>
+              ) : null}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {importError ? (
+        <div className="mt-2 flex items-start gap-1.5 rounded-md bg-red-500/10 p-2 text-[11px] text-red-300 ring-0.5 ring-red-500/30">
+          <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+          <span>{importError.message}</span>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function TemplateDetail({ meta }: { meta: AnyTemplateMeta }) {
-  if (isCarousel(meta)) return <CarouselDetail meta={meta} />;
-  return <SingleDetail meta={meta} />;
+function Detail({
+  selection,
+  userTemplates,
+  picker,
+}: {
+  selection: Selection;
+  userTemplates: template.RuntimeTemplate[];
+  picker: React.ReactNode;
+}) {
+  if (selection.kind === "user") {
+    const t = userTemplates.find((u) => u.id === selection.id);
+    if (!t) return <Empty picker={picker} />;
+    return <UserTemplateDetail template={t} picker={picker} />;
+  }
+  const meta = getTemplate(selection.id);
+  if (!meta) return <Empty picker={picker} />;
+  return <TemplateDetail meta={meta} picker={picker} />;
 }
 
-function SingleDetail({ meta }: { meta: AnySingleTemplateMeta }) {
+function Empty({ picker }: { picker: React.ReactNode }) {
+  return (
+    <div className="flex flex-1 overflow-hidden gap-2">
+      <aside className="w-[320px] shrink-0 overflow-y-auto px-4 py-4">{picker}</aside>
+      <div className="flex flex-1 items-center justify-center rounded-[20px] bg-black/30 text-[13px] text-white/45 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
+        Select a template.
+      </div>
+    </div>
+  );
+}
+
+function TemplateDetail({ meta, picker }: { meta: AnyTemplateMeta; picker: React.ReactNode }) {
+  if (isCarousel(meta)) return <CarouselDetail meta={meta} picker={picker} />;
+  return <SingleDetail meta={meta} picker={picker} />;
+}
+
+function SingleDetail({ meta, picker }: { meta: AnySingleTemplateMeta; picker: React.ReactNode }) {
   const [props, setProps] = useState<Record<string, unknown>>(meta.defaultProps);
   const render = useRenderTemplate();
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="flex flex-1 overflow-hidden bg-black/30">
-        <CanvasView meta={meta} payload={props} />
-      </div>
-      <aside className="w-[320px] shrink-0 overflow-y-auto border-l border-white/[0.06] px-4 py-4">
+    <div className="flex flex-1 overflow-hidden gap-2">
+      <aside className="w-[320px] shrink-0 overflow-y-auto px-4 py-4">
+        {picker}
         <Header meta={meta} />
         <PropsEditor defaults={meta.defaultProps} value={props} onChange={setProps} />
         <Button
@@ -236,7 +321,7 @@ function SingleDetail({ meta }: { meta: AnySingleTemplateMeta }) {
             } as any)
           }
           disabled={render.isPending}
-          className="mt-5 w-full"
+          className="mt-6 w-full"
         >
           <ImageIcon className="h-4 w-4" strokeWidth={2.25} />
           {render.isPending ? "Rendering..." : "Render PNG"}
@@ -250,11 +335,14 @@ function SingleDetail({ meta }: { meta: AnySingleTemplateMeta }) {
           }
         />
       </aside>
+      <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
+        <CanvasView meta={meta} payload={props} />
+      </div>
     </div>
   );
 }
 
-function CarouselDetail({ meta }: { meta: AnyCarouselTemplateMeta }) {
+function CarouselDetail({ meta, picker }: { meta: AnyCarouselTemplateMeta; picker: React.ReactNode }) {
   const [shared, setShared] = useState<Record<string, unknown>>(meta.defaultShared);
   const [slides, setSlides] = useState<Record<string, unknown>[]>(meta.defaultSlides);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -283,39 +371,9 @@ function CarouselDetail({ meta }: { meta: AnyCarouselTemplateMeta }) {
   }
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="flex flex-1 flex-col overflow-hidden bg-black/30">
-        <div className="flex flex-1 overflow-hidden">
-          <CanvasView
-            meta={meta}
-            payload={{ shared, slides }}
-            slideIndex={idx}
-            onSlideChange={setSlideIndex}
-          />
-        </div>
-        <div className="flex items-center justify-center gap-2 border-t border-white/[0.06] px-4 py-2">
-          <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={addSlide}
-              disabled={slides.length >= meta.maxSlides}
-              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/65 hover:bg-white/[0.06] disabled:opacity-30"
-            >
-              + Slide
-            </button>
-            <button
-              type="button"
-              onClick={removeSlide}
-              disabled={slides.length <= meta.minSlides}
-              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/55 hover:bg-white/[0.06] disabled:opacity-30"
-            >
-              − Slide
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <aside className="w-[340px] shrink-0 overflow-y-auto border-l border-white/[0.06] px-4 py-4">
+    <div className="flex flex-1 overflow-hidden gap-2">
+      <aside className="w-[340px] shrink-0 overflow-y-auto px-4 py-4">
+        {picker}
         <Header meta={meta} />
 
         <section>
@@ -327,9 +385,10 @@ function CarouselDetail({ meta }: { meta: AnyCarouselTemplateMeta }) {
           />
         </section>
 
-        <section className="mt-5">
+        <section className="mt-6 border-t border-white/[0.06] pt-5">
           <SectionHeading>
-            Slide {idx + 1} of {slides.length}
+            Slide {idx + 1}
+            <span className="ml-1.5 text-[11px] font-normal text-white/40">of {slides.length}</span>
           </SectionHeading>
           <PropsEditor
             defaults={meta.defaultSlides[0] as Record<string, unknown>}
@@ -349,7 +408,7 @@ function CarouselDetail({ meta }: { meta: AnyCarouselTemplateMeta }) {
             } as any)
           }
           disabled={render.isPending}
-          className="mt-5 w-full"
+          className="mt-6 w-full"
         >
           <ImageIcon className="h-4 w-4" strokeWidth={2.25} />
           {render.isPending ? `Rendering ${slides.length}...` : `Render carousel (${slides.length})`}
@@ -373,11 +432,41 @@ function CarouselDetail({ meta }: { meta: AnyCarouselTemplateMeta }) {
           </div>
         ) : null}
       </aside>
+      <div className="flex flex-1 flex-col overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
+        <div className="flex flex-1 overflow-hidden gap-2">
+          <CanvasView
+            meta={meta}
+            payload={{ shared, slides }}
+            slideIndex={idx}
+            onSlideChange={setSlideIndex}
+          />
+        </div>
+        <div className="flex items-center justify-center gap-2 border-t border-white/[0.06] px-4 py-2">
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={removeSlide}
+              disabled={slides.length <= meta.minSlides}
+              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/55 hover:bg-white/[0.06] disabled:opacity-30"
+            >
+              − Slide
+            </button>
+            <button
+              type="button"
+              onClick={addSlide}
+              disabled={slides.length >= meta.maxSlides}
+              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/65 hover:bg-white/[0.06] disabled:opacity-30"
+            >
+              + Slide
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function UserTemplateDetail({ template: t }: { template: template.RuntimeTemplate }) {
+function UserTemplateDetail({ template: t, picker }: { template: template.RuntimeTemplate; picker: React.ReactNode }) {
   const [slideIndex, setSlideIndex] = useState(0);
   const baseURLQuery = useRenderBaseURL();
   const baseURL = baseURLQuery.data ?? "";
@@ -419,18 +508,9 @@ function UserTemplateDetail({ template: t }: { template: template.RuntimeTemplat
   );
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="flex flex-1 overflow-hidden bg-black/30">
-        <CanvasView
-          meta={fakeMeta}
-          payload={{}}
-          slideIndex={slideIndex}
-          onSlideChange={setSlideIndex}
-          slideUrls={slideUrls}
-        />
-      </div>
-
-      <aside className="w-[320px] shrink-0 overflow-y-auto border-l border-white/[0.06] px-4 py-4">
+    <div className="flex flex-1 overflow-hidden gap-2">
+      <aside className="w-[320px] shrink-0 overflow-y-auto px-4 py-4">
+        {picker}
         <div className="mb-4">
           <h2 className="text-[15px] font-semibold text-white">{t.name}</h2>
           <p className="mt-1 text-[12px] text-white/55">{t.description}</p>
@@ -484,6 +564,15 @@ function UserTemplateDetail({ template: t }: { template: template.RuntimeTemplat
           </div>
         ) : null}
       </aside>
+      <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
+        <CanvasView
+          meta={fakeMeta}
+          payload={{}}
+          slideIndex={slideIndex}
+          onSlideChange={setSlideIndex}
+          slideUrls={slideUrls}
+        />
+      </div>
     </div>
   );
 }
@@ -508,16 +597,16 @@ function Chip({ children }: { children: React.ReactNode }) {
 
 function Header({ meta }: { meta: AnyTemplateMeta }) {
   return (
-    <div className="mb-4">
-      <h2 className="text-[15px] font-semibold text-white">{meta.name}</h2>
-      <p className="mt-1 text-[12px] text-white/55">{meta.description}</p>
+    <div className="mb-5 border-t border-white/[0.06] pt-5">
+      <h2 className="text-[15px] font-semibold tracking-tight text-white">{meta.name}</h2>
+      <p className="mt-1 text-[12px] leading-relaxed text-white/55">{meta.description}</p>
     </div>
   );
 }
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mb-2 text-[10.5px] font-semibold uppercase tracking-wider text-white/50">
+    <h3 className="mb-3 text-[12.5px] font-semibold tracking-tight text-white">
       {children}
     </h3>
   );
@@ -562,7 +651,7 @@ function PropsEditor({
   onChange: (next: Record<string, unknown>) => void;
 }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3.5">
       {Object.entries(defaults).map(([key, defaultVal]) => (
         <PropField
           key={key}
@@ -585,7 +674,7 @@ function PropField({
   onChange: (v: unknown) => void;
 }) {
   const label = (
-    <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">
+    <span className="mb-1.5 block text-[10.5px] font-medium uppercase tracking-[0.08em] text-white/40">
       {name}
     </span>
   );
@@ -745,8 +834,8 @@ function AICreateModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="flex w-[560px] max-h-[85vh] flex-col overflow-hidden rounded-xl bg-(--color-background) ring-0.5 ring-white/[0.08] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+      <div className="flex w-[560px] max-h-[85vh] flex-col overflow-hidden rounded-[20px] bg-(--color-popover)/95 backdrop-blur-2xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.08),0_30px_80px_-20px_rgba(0,0,0,0.7)]">
         <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
           <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
             <Sparkles className="h-4 w-4 text-(--color-primary)" />

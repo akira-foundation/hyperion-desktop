@@ -31,8 +31,7 @@ export function AppShell({ children }: AppShellProps) {
     >
       <Sidebar />
       <main className="no-drag relative flex-1 overflow-hidden">
-        <div className="drag absolute inset-x-0 top-0 z-0 h-10" />
-        <div className="h-full overflow-auto px-3 pb-3 pt-12">{children}</div>
+        <div className="h-full overflow-auto">{children}</div>
       </main>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <OnboardingWizard />

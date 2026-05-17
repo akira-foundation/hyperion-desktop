@@ -14,7 +14,7 @@ export function Sidebar() {
         shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07),0_10px_30px_-10px_rgba(0,0,0,0.5)]
       "
     >
-      <div className="drag flex h-[56px] shrink-0 items-center justify-end pr-3.5">
+      <div className="drag flex h-[56px] shrink-0 items-start justify-end pr-3.5 pt-[7px]">
         <div className="flex items-center gap-1.5 text-white/90">
           <Hexagon
             className="h-4 w-4 fill-(--color-primary)/15 text-(--color-primary)"

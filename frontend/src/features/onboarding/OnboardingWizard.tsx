@@ -40,7 +40,7 @@ export function OnboardingWizard() {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-md">
-      <div className="flex w-[640px] max-h-[85vh] flex-col overflow-hidden rounded-2xl bg-(--color-background) shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] ring-0.5 ring-white/[0.08]">
+      <div className="flex w-[640px] max-h-[85vh] flex-col overflow-hidden rounded-[20px] bg-(--color-popover)/95 backdrop-blur-2xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.08),0_30px_80px_-20px_rgba(0,0,0,0.7)]">
         <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
           <Hexagon className="h-5 w-5 fill-(--color-primary)/15 text-(--color-primary)" strokeWidth={2} />
           <div>
