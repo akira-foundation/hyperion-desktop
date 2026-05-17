@@ -48,6 +48,12 @@ func (s *Server) MountUserTemplates(userTemplatesDir string) {
 	s.mux.Handle(prefix, http.StripPrefix(prefix, safeFileServer(userTemplatesDir)))
 }
 
+// MountAssets serves generated image assets from assetsDir under /assets/.
+func (s *Server) MountAssets(assetsDir string) {
+	prefix := "/assets/"
+	s.mux.Handle(prefix, http.StripPrefix(prefix, safeFileServer(assetsDir)))
+}
+
 func safeFileServer(root string) http.Handler {
 	fileSrv := http.FileServer(http.Dir(root))
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -119,6 +119,42 @@ export namespace ai {
 
 export namespace application {
 	
+	export class Attachment {
+	    filename: string;
+	    base64: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Attachment(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.filename = source["filename"];
+	        this.base64 = source["base64"];
+	    }
+	}
+	export class GenerateImageRequest {
+	    provider: string;
+	    model: string;
+	    prompt: string;
+	    size: string;
+	    quality: string;
+	    kind: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GenerateImageRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.provider = source["provider"];
+	        this.model = source["model"];
+	        this.prompt = source["prompt"];
+	        this.size = source["size"];
+	        this.quality = source["quality"];
+	        this.kind = source["kind"];
+	    }
+	}
 	export class GenerateRequest {
 	    provider: string;
 	    model: string;
@@ -137,6 +173,54 @@ export namespace application {
 	        this.system = source["system"];
 	        this.messages = this.convertValues(source["messages"], ai.Message);
 	        this.maxTokens = source["maxTokens"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class GenerateTemplateInput {
+	    name: string;
+	    description: string;
+	    prompt: string;
+	    width: number;
+	    height: number;
+	    slideCount: number;
+	    category: string;
+	    attachments: Attachment[];
+	    localRefs: string[];
+	    urls: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new GenerateTemplateInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.prompt = source["prompt"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.slideCount = source["slideCount"];
+	        this.category = source["category"];
+	        this.attachments = this.convertValues(source["attachments"], Attachment);
+	        this.localRefs = source["localRefs"];
+	        this.urls = source["urls"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -203,15 +287,15 @@ export namespace application {
 export namespace draft {
 	
 	export class Draft {
-	    ID: string;
-	    Title: string;
-	    Body: string;
-	    Platform: string;
-	    Status: string;
+	    id: string;
+	    title: string;
+	    body: string;
+	    platform: string;
+	    status: string;
 	    // Go type: time
-	    CreatedAt: any;
+	    createdAt: any;
 	    // Go type: time
-	    UpdatedAt: any;
+	    updatedAt: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new Draft(source);
@@ -219,13 +303,153 @@ export namespace draft {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.ID = source["ID"];
-	        this.Title = source["Title"];
-	        this.Body = source["Body"];
-	        this.Platform = source["Platform"];
-	        this.Status = source["Status"];
-	        this.CreatedAt = this.convertValues(source["CreatedAt"], null);
-	        this.UpdatedAt = this.convertValues(source["UpdatedAt"], null);
+	        this.id = source["id"];
+	        this.title = source["title"];
+	        this.body = source["body"];
+	        this.platform = source["platform"];
+	        this.status = source["status"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.updatedAt = this.convertValues(source["updatedAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
+export namespace image {
+	
+	export class Capabilities {
+	    quality: boolean;
+	    variants: boolean;
+	    inpaint: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Capabilities(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.quality = source["quality"];
+	        this.variants = source["variants"];
+	        this.inpaint = source["inpaint"];
+	    }
+	}
+	export class GeneratedImage {
+	    id: string;
+	    filename: string;
+	    path: string;
+	    url: string;
+	    prompt: string;
+	    model: string;
+	    provider: string;
+	    size: string;
+	    quality: string;
+	    kind: string;
+	    mimeType: string;
+	    sizeBytes: number;
+	    width: number;
+	    height: number;
+	    // Go type: time
+	    createdAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new GeneratedImage(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.filename = source["filename"];
+	        this.path = source["path"];
+	        this.url = source["url"];
+	        this.prompt = source["prompt"];
+	        this.model = source["model"];
+	        this.provider = source["provider"];
+	        this.size = source["size"];
+	        this.quality = source["quality"];
+	        this.kind = source["kind"];
+	        this.mimeType = source["mimeType"];
+	        this.sizeBytes = source["sizeBytes"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class ModelInfo {
+	    id: string;
+	    name: string;
+	    sizes: string[];
+	    qualities: string[];
+	    default: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new ModelInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.sizes = source["sizes"];
+	        this.qualities = source["qualities"];
+	        this.default = source["default"];
+	    }
+	}
+	export class ProviderInfo {
+	    name: string;
+	    displayName: string;
+	    available: boolean;
+	    reason?: string;
+	    capabilities: Capabilities;
+	    models: ModelInfo[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ProviderInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.displayName = source["displayName"];
+	        this.available = source["available"];
+	        this.reason = source["reason"];
+	        this.capabilities = this.convertValues(source["capabilities"], Capabilities);
+	        this.models = this.convertValues(source["models"], ModelInfo);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -263,6 +487,31 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.path = source["path"];
 	        this.content = source["content"];
+	    }
+	}
+
+}
+
+export namespace settings {
+	
+	export class Settings {
+	    theme: string;
+	    onboardingDone: boolean;
+	    defaultAiProvider: string;
+	    defaultImageProvider: string;
+	    defaultModel: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Settings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.theme = source["theme"];
+	        this.onboardingDone = source["onboardingDone"];
+	        this.defaultAiProvider = source["defaultAiProvider"];
+	        this.defaultImageProvider = source["defaultImageProvider"];
+	        this.defaultModel = source["defaultModel"];
 	    }
 	}
 

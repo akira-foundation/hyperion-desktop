@@ -21,11 +21,11 @@ const (
 )
 
 type Draft struct {
-	ID        string
-	Title     string
-	Body      string
-	Platform  Platform
-	Status    Status
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Body      string    `json:"body"`
+	Platform  Platform  `json:"platform"`
+	Status    Status    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

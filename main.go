@@ -20,7 +20,11 @@ import (
 	"hyperion-desktop/internal/drivers/ai/openai"
 	"hyperion-desktop/internal/drivers/renderer/rod"
 	skillclaudecli "hyperion-desktop/internal/drivers/skills/claudecli"
+	driverimage "hyperion-desktop/internal/drivers/image"
+	imageopenai "hyperion-desktop/internal/drivers/image/openai"
+	assetstore "hyperion-desktop/internal/infrastructure/assets"
 	"hyperion-desktop/internal/infrastructure/renderserver"
+	"hyperion-desktop/internal/infrastructure/settings"
 	"hyperion-desktop/internal/infrastructure/sqlite"
 	"hyperion-desktop/internal/infrastructure/usertemplates"
 	"hyperion-desktop/internal/skills"
@@ -80,7 +84,25 @@ func main() {
 	skillService := application.NewSkillService(skillRegistry, skillRunner)
 	log.Printf("[hyperion] Skills bundled: %v", skillRegistry.List())
 
-	app := NewApp(draftService, aiService, renderService, skillService, templateService, renderSrv.BaseURL())
+	assetStore, err := assetstore.NewStore(filepath.Join(dataDir, "assets"))
+	if err != nil {
+		log.Fatalf("assets: %v", err)
+	}
+	renderSrv.MountAssets(assetStore.Dir())
+
+	imageRegistry := driverimage.NewRegistry()
+	imageRegistry.Register(imageopenai.New(os.Getenv("OPENAI_API_KEY")))
+	imageService := application.NewImageService(imageRegistry, assetStore)
+	log.Printf("[hyperion] Image providers: %v", imageRegistry.List(context.Background()))
+
+	settingsStore, err := settings.NewStore(filepath.Join(dataDir, "settings.json"))
+	if err != nil {
+		log.Fatalf("settings: %v", err)
+	}
+	settingsService := application.NewSettingsService(settingsStore)
+	exportService := application.NewExportService()
+
+	app := NewApp(draftService, aiService, renderService, skillService, templateService, imageService, settingsService, exportService, renderSrv.BaseURL())
 
 	if err := wails.Run(&options.App{
 		Title:                    "Hyperion",

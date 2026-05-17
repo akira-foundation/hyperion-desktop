@@ -52,3 +52,25 @@ func (s *DraftService) Get(ctx context.Context, id string) (*draft.Draft, error)
 func (s *DraftService) Delete(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
 }
+
+func (s *DraftService) Update(ctx context.Context, id, title, body, platform, status string) (*draft.Draft, error) {
+	existing, err := s.repo.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if title != "" {
+		existing.Title = title
+	}
+	existing.Body = body
+	if platform != "" {
+		existing.Platform = draft.Platform(platform)
+	}
+	if status != "" {
+		existing.Status = draft.Status(status)
+	}
+	existing.UpdatedAt = time.Now().UTC()
+	if err := s.repo.Update(ctx, existing); err != nil {
+		return nil, err
+	}
+	return existing, nil
+}

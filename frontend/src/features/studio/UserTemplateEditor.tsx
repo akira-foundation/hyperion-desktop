@@ -11,6 +11,7 @@ import {
   Sparkles,
   Code2,
   X,
+  ImagePlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,7 @@ import {
   useSaveUserTemplateFile,
 } from "@/services/templates";
 import { useAIProviders, useGenerate } from "@/services/ai";
+import { useAssets } from "@/services/images";
 import { GetUserTemplateFile, SaveUserTemplateFile } from "../../../wailsjs/go/main/App";
 import type { template } from "../../../wailsjs/go/models";
 import { CanvasView } from "@/features/templates/CanvasView";
@@ -140,6 +142,8 @@ export function UserTemplateEditor({ template: t, header }: Props) {
               </button>
             ))}
           </div>
+
+          <AssetStrip baseURL={baseURL} templateId={t.id} filename={activeFile} onInserted={bumpPreview} />
 
           <div className="flex-1 overflow-hidden">
             {activeFile ? (
@@ -560,6 +564,66 @@ function SuccessBox({ path, note }: { path: string; note: string }) {
         <span>{note}</span>
         <span className="break-all font-mono text-[10.5px] text-white/55">{path}</span>
       </div>
+    </div>
+  );
+}
+
+function AssetStrip({
+  baseURL,
+  templateId,
+  filename,
+  onInserted,
+}: {
+  baseURL: string;
+  templateId: string;
+  filename: string;
+  onInserted: () => void;
+}) {
+  const assetsQuery = useAssets();
+  const assets = assetsQuery.data ?? [];
+
+  async function onInsert(url: string) {
+    if (!filename) return;
+    try {
+      const current = await GetUserTemplateFile(templateId, filename);
+      const isCss = filename.toLowerCase().endsWith(".css");
+      const snippet = isCss
+        ? `background-image: url("${url}");\n`
+        : `<img src="${url}" alt="" />\n`;
+      const next = current + (current.endsWith("\n") ? "" : "\n") + snippet;
+      await SaveUserTemplateFile(templateId, filename, next);
+      onInserted();
+    } catch (e) {
+      console.error("[hyperion] asset insert:", e);
+    }
+  }
+
+  if (assets.length === 0) {
+    return (
+      <div className="flex shrink-0 items-center gap-2 border-b border-white/[0.06] bg-black/20 px-3 py-1.5 text-[10.5px] text-white/40">
+        <ImagePlus className="h-3.5 w-3.5" />
+        <span>No assets yet. Generate some in Assets page.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-white/[0.06] bg-black/20 px-3 py-1.5">
+      <ImagePlus className="h-3.5 w-3.5 shrink-0 text-white/45" />
+      {assets.slice(0, 20).map((a) => {
+        const url = `${baseURL}${a.url}`;
+        return (
+          <button
+            key={a.id}
+            type="button"
+            onClick={() => onInsert(url)}
+            title={a.prompt}
+            className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded ring-0.5 ring-white/[0.06] transition hover:ring-(--color-primary)"
+          >
+            <img src={url} alt={a.prompt} className="h-full w-full object-cover" />
+          </button>
+        );
+      })}
     </div>
   );
 }

@@ -1,11 +1,26 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
+import { CommandPalette } from "@/features/palette/CommandPalette";
+import { OnboardingWizard } from "@/features/onboarding/OnboardingWizard";
 
 interface AppShellProps {
   children: ReactNode;
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <div
       className="flex h-full w-full gap-2 p-2"
@@ -19,6 +34,8 @@ export function AppShell({ children }: AppShellProps) {
         <div className="drag absolute inset-x-0 top-0 z-0 h-10" />
         <div className="h-full overflow-auto px-3 pb-3 pt-12">{children}</div>
       </main>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <OnboardingWizard />
     </div>
   );
 }

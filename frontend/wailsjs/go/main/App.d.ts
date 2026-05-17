@@ -3,19 +3,33 @@
 import {draft} from '../models';
 import {application} from '../models';
 import {ai} from '../models';
+import {image} from '../models';
 import {template} from '../models';
+import {settings} from '../models';
 import {main} from '../models';
 import {skill} from '../models';
 
+export function CopyToClipboard(arg1:string):Promise<void>;
+
 export function CreateDraft(arg1:string,arg2:string,arg3:string):Promise<draft.Draft>;
+
+export function DeleteAsset(arg1:string):Promise<void>;
 
 export function DeleteDraft(arg1:string):Promise<void>;
 
 export function DeleteUserTemplate(arg1:string):Promise<void>;
 
+export function ExportPathsAsZIP(arg1:Array<string>,arg2:string):Promise<string>;
+
 export function GenerateContent(arg1:application.GenerateRequest):Promise<ai.GenerateOutput>;
 
 export function GenerateContentStream(arg1:application.GenerateRequest):Promise<string>;
+
+export function GenerateImage(arg1:application.GenerateImageRequest):Promise<image.GeneratedImage>;
+
+export function GenerateTemplateFromAI(arg1:application.GenerateTemplateInput):Promise<template.RuntimeTemplate>;
+
+export function GetSettings():Promise<settings.Settings>;
 
 export function GetUserTemplateFile(arg1:string,arg2:string):Promise<string>;
 
@@ -25,13 +39,23 @@ export function ImportTemplateFromFiles(arg1:string,arg2:string,arg3:string,arg4
 
 export function ListAIProviders():Promise<Array<ai.ProviderInfo>>;
 
+export function ListAssets():Promise<Array<image.GeneratedImage>>;
+
 export function ListDrafts():Promise<Array<draft.Draft>>;
+
+export function ListImageProviders():Promise<Array<image.ProviderInfo>>;
 
 export function ListSkills():Promise<Array<skill.Skill>>;
 
 export function ListUserTemplates():Promise<Array<template.RuntimeTemplate>>;
 
+export function MarkOnboardingDone():Promise<settings.Settings>;
+
+export function OpenPath(arg1:string):Promise<void>;
+
 export function PickProjectFolder():Promise<string>;
+
+export function PickReferenceFiles():Promise<Array<string>>;
 
 export function RenderBaseURL():Promise<string>;
 
@@ -43,8 +67,14 @@ export function RenderUserTemplate(arg1:string,arg2:number):Promise<template.Ren
 
 export function RenderUserTemplateCarousel(arg1:string):Promise<template.CarouselRenderResult>;
 
+export function RevealInFinder(arg1:string):Promise<void>;
+
 export function RunSkill(arg1:skill.RunRequest):Promise<skill.RunResult>;
+
+export function SaveSettings(arg1:settings.Settings):Promise<void>;
 
 export function SaveSkillResultAsTemplate(arg1:string,arg2:string,arg3:string,arg4:string,arg5:template.Size):Promise<template.RuntimeTemplate>;
 
 export function SaveUserTemplateFile(arg1:string,arg2:string,arg3:string):Promise<void>;
+
+export function UpdateDraft(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string):Promise<draft.Draft>;

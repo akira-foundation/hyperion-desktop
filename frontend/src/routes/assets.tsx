@@ -1,8 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { AssetsPage } from "@/features/assets/AssetsPage";
 
-export const Route = createFileRoute("/assets")({
-  component: () => (
-    <PlaceholderPage title="Assets" description="Rendered branded assets." />
-  ),
-});
+export const Route = createFileRoute("/assets")({ component: AssetsPage });

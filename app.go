@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -13,9 +14,12 @@ import (
 	"hyperion-desktop/internal/application"
 	"hyperion-desktop/internal/domain/ai"
 	"hyperion-desktop/internal/domain/draft"
+	imagedom "hyperion-desktop/internal/domain/image"
 	skilldom "hyperion-desktop/internal/domain/skill"
 	tmpl "hyperion-desktop/internal/domain/template"
 	driverai "hyperion-desktop/internal/drivers/ai"
+	driverimage "hyperion-desktop/internal/drivers/image"
+	settingsdom "hyperion-desktop/internal/infrastructure/settings"
 )
 
 type App struct {
@@ -25,6 +29,9 @@ type App struct {
 	renders   *application.RenderService
 	skills    *application.SkillService
 	templates *application.TemplateService
+	images    *application.ImageService
+	settings  *application.SettingsService
+	exports   *application.ExportService
 	renderBaseURL string
 }
 
@@ -34,6 +41,9 @@ func NewApp(
 	renders *application.RenderService,
 	skills *application.SkillService,
 	templates *application.TemplateService,
+	images *application.ImageService,
+	settings *application.SettingsService,
+	exports *application.ExportService,
 	renderBaseURL string,
 ) *App {
 	return &App{
@@ -42,6 +52,9 @@ func NewApp(
 		renders:       renders,
 		skills:        skills,
 		templates:     templates,
+		images:        images,
+		settings:      settings,
+		exports:       exports,
 		renderBaseURL: renderBaseURL,
 	}
 }
@@ -64,6 +77,71 @@ func (a *App) CreateDraft(title, body, platform string) (*draft.Draft, error) {
 
 func (a *App) DeleteDraft(id string) error {
 	return a.drafts.Delete(a.ctx, id)
+}
+
+func (a *App) UpdateDraft(id, title, body, platform, status string) (*draft.Draft, error) {
+	return a.drafts.Update(a.ctx, id, title, body, platform, status)
+}
+
+func (a *App) GetSettings() settingsdom.Settings {
+	return a.settings.Get()
+}
+
+func (a *App) SaveSettings(next settingsdom.Settings) error {
+	return a.settings.Save(next)
+}
+
+func (a *App) MarkOnboardingDone() (settingsdom.Settings, error) {
+	return a.settings.MarkOnboardingDone()
+}
+
+func (a *App) CopyToClipboard(text string) error {
+	wailsruntime.ClipboardSetText(a.ctx, text)
+	return nil
+}
+
+func (a *App) RevealInFinder(path string) error {
+	if path == "" {
+		return fmt.Errorf("path required")
+	}
+	return exec.Command("open", "-R", path).Run()
+}
+
+func (a *App) OpenPath(path string) error {
+	if path == "" {
+		return fmt.Errorf("path required")
+	}
+	return exec.Command("open", path).Run()
+}
+
+func (a *App) ExportPathsAsZIP(paths []string, suggestedName string) (string, error) {
+	if len(paths) == 0 {
+		return "", fmt.Errorf("no paths provided")
+	}
+	data, err := a.exports.BundleZIP(paths)
+	if err != nil {
+		return "", err
+	}
+	if suggestedName == "" {
+		suggestedName = "hyperion-bundle.zip"
+	}
+	out, err := wailsruntime.SaveFileDialog(a.ctx, wailsruntime.SaveDialogOptions{
+		Title:           "Save bundle",
+		DefaultFilename: suggestedName,
+		Filters: []wailsruntime.FileFilter{
+			{DisplayName: "ZIP archive (*.zip)", Pattern: "*.zip"},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+	if out == "" {
+		return "", nil
+	}
+	if err := os.WriteFile(out, data, 0o644); err != nil {
+		return "", err
+	}
+	return out, nil
 }
 
 func (a *App) ListAIProviders() []driverai.ProviderInfo {
@@ -162,6 +240,22 @@ func (a *App) RunSkill(req skilldom.RunRequest) (*skilldom.RunResult, error) {
 	return a.skills.Run(a.ctx, req)
 }
 
+func (a *App) ListImageProviders() []driverimage.ProviderInfo {
+	return a.images.ListProviders(a.ctx)
+}
+
+func (a *App) GenerateImage(req application.GenerateImageRequest) (*imagedom.GeneratedImage, error) {
+	return a.images.Generate(a.ctx, req)
+}
+
+func (a *App) ListAssets() []imagedom.GeneratedImage {
+	return a.images.List()
+}
+
+func (a *App) DeleteAsset(id string) error {
+	return a.images.Delete(id)
+}
+
 func (a *App) PickProjectFolder() (string, error) {
 	return wailsruntime.OpenDirectoryDialog(a.ctx, wailsruntime.OpenDialogOptions{
 		Title: "Select project folder",
@@ -255,6 +349,21 @@ func (a *App) SaveSkillResultAsTemplate(outputDir, name, description, category s
 
 func (a *App) DeleteUserTemplate(id string) error {
 	return a.templates.Delete(id)
+}
+
+func (a *App) GenerateTemplateFromAI(in application.GenerateTemplateInput) (*tmpl.RuntimeTemplate, error) {
+	return a.templates.GenerateFromAI(a.ctx, in)
+}
+
+func (a *App) PickReferenceFiles() ([]string, error) {
+	return wailsruntime.OpenMultipleFilesDialog(a.ctx, wailsruntime.OpenDialogOptions{
+		Title: "Pick reference files",
+		Filters: []wailsruntime.FileFilter{
+			{DisplayName: "All supported", Pattern: "*.png;*.jpg;*.jpeg;*.webp;*.gif;*.pdf;*.md;*.txt;*.html;*.css"},
+			{DisplayName: "Images", Pattern: "*.png;*.jpg;*.jpeg;*.webp;*.gif"},
+			{DisplayName: "Documents", Pattern: "*.pdf;*.md;*.txt"},
+		},
+	})
 }
 
 func (a *App) GetUserTemplateFile(id, filename string) (string, error) {

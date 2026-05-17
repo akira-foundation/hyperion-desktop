@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { DraftsPage } from "@/features/drafts/DraftsPage";
 
-export const Route = createFileRoute("/drafts")({
-  component: () => <PlaceholderPage title="Drafts" description="Local drafts." />,
-});
+export const Route = createFileRoute("/drafts")({ component: DraftsPage });

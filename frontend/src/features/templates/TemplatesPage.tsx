@@ -6,6 +6,8 @@ import {
   Check,
   Upload,
   Trash2,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTemplate, templatesByCategory } from "@/templates/registry";
@@ -21,6 +23,8 @@ import {
   useImportTemplate,
   useDeleteUserTemplate,
   useRenderBaseURL,
+  useGenerateTemplateFromAI,
+  pickReferenceFiles,
 } from "@/services/templates";
 import { CanvasView } from "./CanvasView";
 import type { template } from "../../../wailsjs/go/models";
@@ -56,6 +60,8 @@ export function TemplatesPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   }
+
+  const [aiCreateOpen, setAiCreateOpen] = useState(false);
 
   return (
     <div className="flex h-full">
@@ -100,15 +106,25 @@ export function TemplatesPage() {
             <h2 className="text-[11px] font-medium uppercase tracking-wider text-white/45">
               Your templates
             </h2>
-            <button
-              type="button"
-              onClick={onImport}
-              disabled={importMut.isPending}
-              className="flex h-6 w-6 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
-              title="Import template folder"
-            >
-              <Upload className="h-3.5 w-3.5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setAiCreateOpen(true)}
+                className="flex h-6 w-6 items-center justify-center rounded text-(--color-primary) hover:bg-white/[0.06]"
+                title="Create with Claude AI"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={onImport}
+                disabled={importMut.isPending}
+                className="flex h-6 w-6 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
+                title="Import template folder"
+              >
+                <Upload className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
           {userTemplates.length === 0 ? (
@@ -153,6 +169,16 @@ export function TemplatesPage() {
       </aside>
 
       <Detail selection={selection} userTemplates={userTemplates} />
+
+      {aiCreateOpen ? (
+        <AICreateModal
+          onClose={() => setAiCreateOpen(false)}
+          onCreated={(t) => {
+            setAiCreateOpen(false);
+            setSelection({ kind: "user", id: t.id });
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -614,5 +640,316 @@ function PropField({
         className="h-8 w-full rounded-md bg-white/[0.05] px-2.5 text-[12.5px] text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
       />
     </label>
+  );
+}
+
+async function readAsBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error("read failed"));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("invalid file content"));
+        return;
+      }
+      const i = result.indexOf(",");
+      resolve(i >= 0 ? result.slice(i + 1) : result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function AICreateModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: (t: template.RuntimeTemplate) => void;
+}) {
+  const [name, setName] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [slideCount, setSlideCount] = useState(1);
+  const [width, setWidth] = useState(1080);
+  const [height, setHeight] = useState(1080);
+  const [category, setCategory] = useState("Custom");
+  const [attachments, setAttachments] = useState<{ filename: string; base64: string; preview: string }[]>([]);
+  const [localRefs, setLocalRefs] = useState<string[]>([]);
+  const [urls, setURLs] = useState<string[]>([]);
+  const [urlInput, setURLInput] = useState("");
+  const generate = useGenerateTemplateFromAI();
+
+  async function onAttach(files: FileList | null) {
+    if (!files) return;
+    const arr: { filename: string; base64: string; preview: string }[] = [];
+    for (const f of Array.from(files)) {
+      const b64 = await readAsBase64(f);
+      arr.push({
+        filename: f.name,
+        base64: b64,
+        preview: f.type.startsWith("image/") ? `data:${f.type};base64,${b64}` : "",
+      });
+    }
+    setAttachments((prev) => [...prev, ...arr]);
+  }
+
+  function removeAttachment(i: number) {
+    setAttachments((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function onPickLocal() {
+    try {
+      const paths = await pickReferenceFiles();
+      if (paths && paths.length > 0) {
+        setLocalRefs((prev) => [...prev, ...paths]);
+      }
+    } catch (e) {
+      console.error("[hyperion] pick refs:", e);
+    }
+  }
+
+  function removeLocalRef(i: number) {
+    setLocalRefs((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function addURL() {
+    const u = urlInput.trim();
+    if (!u) return;
+    setURLs((prev) => [...prev, u]);
+    setURLInput("");
+  }
+
+  function removeURL(i: number) {
+    setURLs((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !prompt.trim()) return;
+    generate.mutate(
+      {
+        name: name.trim(),
+        description: `AI-generated: ${prompt.slice(0, 100)}`,
+        prompt: prompt.trim(),
+        width,
+        height,
+        slideCount,
+        category,
+        attachments: attachments.map((a) => ({ filename: a.filename, base64: a.base64 })),
+        localRefs,
+        urls,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      { onSuccess: (t) => onCreated(t) },
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="flex w-[560px] max-h-[85vh] flex-col overflow-hidden rounded-xl bg-(--color-background) ring-0.5 ring-white/[0.08] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]">
+        <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
+            <Sparkles className="h-4 w-4 text-(--color-primary)" />
+            Create template with Claude
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={generate.isPending}
+            className="flex h-7 w-7 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className="flex flex-col gap-3 overflow-y-auto p-4">
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Name</span>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="My Carousel Template"
+              className="h-9 w-full rounded-md bg-white/[0.05] px-2.5 text-[13px] text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
+            />
+          </label>
+
+          <div className="grid grid-cols-3 gap-3">
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Slides</span>
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={slideCount}
+                onChange={(e) => setSlideCount(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
+                className="h-9 w-full rounded-md bg-white/[0.05] px-2.5 text-[13px] tabular-nums text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Width</span>
+              <input
+                type="number"
+                min={320}
+                max={4096}
+                value={width}
+                onChange={(e) => setWidth(Number(e.target.value) || 1080)}
+                className="h-9 w-full rounded-md bg-white/[0.05] px-2.5 text-[13px] tabular-nums text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Height</span>
+              <input
+                type="number"
+                min={320}
+                max={4096}
+                value={height}
+                onChange={(e) => setHeight(Number(e.target.value) || 1080)}
+                className="h-9 w-full rounded-md bg-white/[0.05] px-2.5 text-[13px] tabular-nums text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
+              />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Category</span>
+            <input
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Marketing / Storytelling / Photography..."
+              className="h-9 w-full rounded-md bg-white/[0.05] px-2.5 text-[13px] text-white outline-none ring-0.5 ring-white/[0.08] focus:ring-white/20"
+            />
+          </label>
+
+          <div>
+            <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">References (optional)</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {attachments.map((a, i) => (
+                <div
+                  key={i}
+                  className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-md bg-white/[0.05] ring-0.5 ring-white/[0.08]"
+                  title={a.filename}
+                >
+                  {a.preview ? (
+                    <img src={a.preview} alt={a.filename} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="px-1 text-center text-[10px] text-white/55">{a.filename.split(".").pop()?.toUpperCase()}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(i)}
+                    className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-bl bg-black/70 text-white/85 hover:bg-red-500/80"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              ))}
+              <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-dashed border-white/15 text-[10.5px] text-white/55 hover:border-white/30 hover:text-white/85">
+                + Upload
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,application/pdf,.md,.txt,.html,.css"
+                  onChange={(e) => onAttach(e.target.files)}
+                  className="hidden"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={onPickLocal}
+                className="flex h-16 w-16 items-center justify-center rounded-md border border-dashed border-white/15 text-[10.5px] text-white/55 hover:border-white/30 hover:text-white/85"
+              >
+                + Local
+              </button>
+            </div>
+
+            {localRefs.length > 0 ? (
+              <ul className="mt-2 flex flex-col gap-1">
+                {localRefs.map((p, i) => (
+                  <li key={i} className="flex items-center gap-2 rounded-md bg-white/[0.05] px-2 py-1 text-[11.5px] ring-0.5 ring-white/[0.06]">
+                    <span className="flex-1 truncate font-mono text-white/75">{p}</span>
+                    <button type="button" onClick={() => removeLocalRef(i)} className="flex h-5 w-5 items-center justify-center rounded text-white/55 hover:bg-red-500/15 hover:text-red-300">
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <div className="mt-2 flex gap-2">
+              <input
+                type="url"
+                value={urlInput}
+                onChange={(e) => setURLInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addURL();
+                  }
+                }}
+                placeholder="https://example.com — Add URL"
+                className="h-8 flex-1 rounded-md bg-white/[0.05] px-2.5 text-[12px] text-white outline-none ring-0.5 ring-white/[0.08] placeholder:text-white/30 focus:ring-white/20"
+              />
+              <button
+                type="button"
+                onClick={addURL}
+                disabled={!urlInput.trim()}
+                className="h-8 rounded-md bg-white/[0.08] px-3 text-[12px] text-white/85 hover:bg-white/[0.12] disabled:opacity-30"
+              >
+                Add
+              </button>
+            </div>
+
+            {urls.length > 0 ? (
+              <ul className="mt-2 flex flex-col gap-1">
+                {urls.map((u, i) => (
+                  <li key={i} className="flex items-center gap-2 rounded-md bg-white/[0.05] px-2 py-1 text-[11.5px] ring-0.5 ring-white/[0.06]">
+                    <span className="flex-1 truncate text-white/75">{u}</span>
+                    <button type="button" onClick={() => removeURL(i)} className="flex h-5 w-5 items-center justify-center rounded text-white/55 hover:bg-red-500/15 hover:text-red-300">
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+
+            <span className="mt-1 block text-[10.5px] text-white/40">
+              Upload files, pick local paths, or paste URLs. Claude reads everything to ground the design.
+            </span>
+          </div>
+
+          <label className="block">
+            <span className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-white/45">Design brief</span>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              rows={8}
+              placeholder="Describe the template: aesthetic, colors, typography, vibe, what each slide should communicate..."
+              className="w-full resize-y rounded-md bg-white/[0.05] px-2.5 py-2 text-[12.5px] leading-relaxed text-white outline-none ring-0.5 ring-white/[0.08] placeholder:text-white/30 focus:ring-white/20"
+            />
+            <span className="mt-1 block text-[10.5px] text-white/40">
+              Claude CLI runs locally with your subscription. No API key needed.
+            </span>
+          </label>
+
+          {generate.error ? (
+            <div className="flex items-start gap-1.5 rounded-md bg-red-500/10 p-2 text-[11.5px] text-red-300 ring-0.5 ring-red-500/30">
+              <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+              <span>{(generate.error as Error).message}</span>
+            </div>
+          ) : null}
+
+          <div className="mt-1 flex justify-end gap-2">
+            <Button type="button" variant="outline" onClick={onClose} disabled={generate.isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={!name.trim() || !prompt.trim() || generate.isPending}>
+              <Sparkles className="h-4 w-4" strokeWidth={2.25} />
+              {generate.isPending ? "Generating..." : "Generate template"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

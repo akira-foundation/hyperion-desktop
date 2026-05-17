@@ -9,6 +9,8 @@ import {
   RenderUserTemplateCarousel,
   GetUserTemplateFile,
   SaveUserTemplateFile,
+  GenerateTemplateFromAI,
+  PickReferenceFiles,
 } from "../../wailsjs/go/main/App";
 import type { application, template } from "../../wailsjs/go/models";
 
@@ -98,6 +100,19 @@ export function useSaveUserTemplateFile() {
       qc.setQueryData(["templates", "user", args.id, "file", args.filename], args.content);
     },
   });
+}
+
+export function useGenerateTemplateFromAI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: application.GenerateTemplateInput) =>
+      (await GenerateTemplateFromAI(input)) as template.RuntimeTemplate,
+    onSuccess: () => qc.invalidateQueries({ queryKey: templateQueryKeys.user }),
+  });
+}
+
+export async function pickReferenceFiles(): Promise<string[]> {
+  return (await PickReferenceFiles()) as string[];
 }
 
 export function useDeleteUserTemplate() {
