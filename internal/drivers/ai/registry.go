@@ -1,11 +1,23 @@
 package ai
 
 import (
+	"context"
 	"fmt"
+	"sort"
 	"sync"
 
+	"hyperion-desktop/internal/domain/ai"
 	"hyperion-desktop/internal/ports"
 )
+
+type ProviderInfo struct {
+	Name         string          `json:"name"`
+	DisplayName  string          `json:"displayName"`
+	Available    bool            `json:"available"`
+	Reason       string          `json:"reason,omitempty"`
+	Capabilities ai.Capabilities `json:"capabilities"`
+	Models       []ai.ModelInfo  `json:"models"`
+}
 
 type Registry struct {
 	mu        sync.RWMutex
@@ -32,12 +44,28 @@ func (r *Registry) Get(name string) (ports.AIProvider, error) {
 	return p, nil
 }
 
-func (r *Registry) Names() []string {
+func (r *Registry) List(ctx context.Context) []ProviderInfo {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	names := make([]string, 0, len(r.providers))
-	for n := range r.providers {
-		names = append(names, n)
+
+	out := make([]ProviderInfo, 0, len(r.providers))
+	for _, p := range r.providers {
+		info := ProviderInfo{
+			Name:         p.Name(),
+			DisplayName:  p.DisplayName(),
+			Capabilities: p.Capabilities(),
+		}
+		if err := p.IsAvailable(ctx); err != nil {
+			info.Available = false
+			info.Reason = err.Error()
+		} else {
+			info.Available = true
+		}
+		if models, err := p.Models(ctx); err == nil {
+			info.Models = models
+		}
+		out = append(out, info)
 	}
-	return names
+	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
+	return out
 }

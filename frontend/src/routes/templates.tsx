@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { TemplatesPage } from "@/features/templates/TemplatesPage";
 
-export const Route = createFileRoute("/templates")({
-  component: () => <PlaceholderPage title="Templates" description="Branded HTML templates." />,
-});
+export const Route = createFileRoute("/templates")({ component: TemplatesPage });

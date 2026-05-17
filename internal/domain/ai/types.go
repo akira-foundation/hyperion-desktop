@@ -9,20 +9,37 @@ const (
 )
 
 type Message struct {
-	Role    Role
-	Content string
+	Role    Role   `json:"role"`
+	Content string `json:"content"`
 }
 
 type GenerateInput struct {
-	Model       string
-	Messages    []Message
-	MaxTokens   int
-	Temperature float64
+	Model     string    `json:"model"`
+	System    string    `json:"system"`
+	Messages  []Message `json:"messages"`
+	MaxTokens int       `json:"maxTokens"`
 }
 
 type GenerateOutput struct {
-	Content      string
-	InputTokens  int
-	OutputTokens int
-	Model        string
+	Content      string `json:"content"`
+	InputTokens  int    `json:"inputTokens"`
+	OutputTokens int    `json:"outputTokens"`
+	CacheRead    int    `json:"cacheRead"`
+	CacheWrite   int    `json:"cacheWrite"`
+	Model        string `json:"model"`
+}
+
+type Capabilities struct {
+	Streaming   bool `json:"streaming"`
+	Vision      bool `json:"vision"`
+	Tools       bool `json:"tools"`
+	Thinking    bool `json:"thinking"`
+	PromptCache bool `json:"promptCache"`
+}
+
+type ModelInfo struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	ContextSize int    `json:"contextSize"`
+	Default     bool   `json:"default"`
 }

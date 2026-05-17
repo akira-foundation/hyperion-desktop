@@ -1,15 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Home,
-  PenLine,
-  Inbox,
-  Sparkles,
+  Wand2,
   LayoutTemplate,
+  PenLine,
   Image,
-  Github,
-  FileText,
-  Calendar,
-  Plug,
   Settings,
 } from "lucide-react";
 
@@ -28,37 +23,19 @@ export interface NavSection {
 
 export const navSections: NavSection[] = [
   {
+    id: "workspace",
+    items: [
+      { to: "/", label: "Home", icon: Home },
+      { to: "/studio", label: "Studio", icon: Wand2 },
+    ],
+  },
+  {
     id: "library",
     title: "Library",
     items: [
-      { to: "/", label: "Home", icon: Home },
-      { to: "/drafts", label: "Drafts", icon: PenLine, count: 4 },
-      { to: "/inbox", label: "Inbox", icon: Inbox },
-    ],
-  },
-  {
-    id: "create",
-    title: "Create",
-    items: [
-      { to: "/generate", label: "Generate", icon: Sparkles },
       { to: "/templates", label: "Templates", icon: LayoutTemplate },
-      { to: "/renders", label: "Renders", icon: Image },
-    ],
-  },
-  {
-    id: "sources",
-    title: "Sources",
-    items: [
-      { to: "/sources/github", label: "GitHub", icon: Github },
-      { to: "/sources/markdown", label: "Markdown", icon: FileText },
-    ],
-  },
-  {
-    id: "publish",
-    title: "Publish",
-    items: [
-      { to: "/schedule", label: "Schedule", icon: Calendar },
-      { to: "/connections", label: "Connections", icon: Plug },
+      { to: "/drafts", label: "Drafts", icon: PenLine },
+      { to: "/assets", label: "Assets", icon: Image },
     ],
   },
 ];

@@ -16,14 +16,38 @@ func NewAIService(registry *driverai.Registry) *AIService {
 	return &AIService{registry: registry}
 }
 
-func (s *AIService) Generate(ctx context.Context, providerName string, in ai.GenerateInput) (*ai.GenerateOutput, error) {
-	p, err := s.registry.Get(providerName)
-	if err != nil {
-		return nil, fmt.Errorf("ai generate: %w", err)
-	}
-	return p.Generate(ctx, in)
+type GenerateRequest struct {
+	Provider  string       `json:"provider"`
+	Model     string       `json:"model"`
+	System    string       `json:"system"`
+	Messages  []ai.Message `json:"messages"`
+	MaxTokens int          `json:"maxTokens"`
 }
 
-func (s *AIService) Providers() []string {
-	return s.registry.Names()
+func (s *AIService) Generate(ctx context.Context, req GenerateRequest) (*ai.GenerateOutput, error) {
+	if req.Provider == "" {
+		return nil, fmt.Errorf("provider required")
+	}
+	if len(req.Messages) == 0 {
+		return nil, fmt.Errorf("messages required")
+	}
+
+	p, err := s.registry.Get(req.Provider)
+	if err != nil {
+		return nil, err
+	}
+	if err := p.IsAvailable(ctx); err != nil {
+		return nil, fmt.Errorf("provider %q unavailable: %w", req.Provider, err)
+	}
+
+	return p.Generate(ctx, ai.GenerateInput{
+		Model:     req.Model,
+		System:    req.System,
+		Messages:  req.Messages,
+		MaxTokens: req.MaxTokens,
+	})
+}
+
+func (s *AIService) ListProviders(ctx context.Context) []driverai.ProviderInfo {
+	return s.registry.List(ctx)
 }

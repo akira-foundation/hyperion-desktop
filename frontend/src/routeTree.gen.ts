@@ -10,20 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as StudioRouteImport } from './routes/studio'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ScheduleRouteImport } from './routes/schedule'
-import { Route as RendersRouteImport } from './routes/renders'
-import { Route as InboxRouteImport } from './routes/inbox'
-import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DraftsRouteImport } from './routes/drafts'
-import { Route as ConnectionsRouteImport } from './routes/connections'
+import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SourcesMarkdownRouteImport } from './routes/sources.markdown'
-import { Route as SourcesGithubRouteImport } from './routes/sources.github'
 
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -31,34 +31,14 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ScheduleRoute = ScheduleRouteImport.update({
-  id: '/schedule',
-  path: '/schedule',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RendersRoute = RendersRouteImport.update({
-  id: '/renders',
-  path: '/renders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InboxRoute = InboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateRoute = GenerateRouteImport.update({
-  id: '/generate',
-  path: '/generate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DraftsRoute = DraftsRouteImport.update({
   id: '/drafts',
   path: '/drafts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConnectionsRoute = ConnectionsRouteImport.update({
-  id: '/connections',
-  path: '/connections',
+const AssetsRoute = AssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -66,111 +46,60 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SourcesMarkdownRoute = SourcesMarkdownRouteImport.update({
-  id: '/sources/markdown',
-  path: '/sources/markdown',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SourcesGithubRoute = SourcesGithubRouteImport.update({
-  id: '/sources/github',
-  path: '/sources/github',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/connections': typeof ConnectionsRoute
+  '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
-  '/generate': typeof GenerateRoute
-  '/inbox': typeof InboxRoute
-  '/renders': typeof RendersRoute
-  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
-  '/sources/github': typeof SourcesGithubRoute
-  '/sources/markdown': typeof SourcesMarkdownRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/connections': typeof ConnectionsRoute
+  '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
-  '/generate': typeof GenerateRoute
-  '/inbox': typeof InboxRoute
-  '/renders': typeof RendersRoute
-  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
-  '/sources/github': typeof SourcesGithubRoute
-  '/sources/markdown': typeof SourcesMarkdownRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/connections': typeof ConnectionsRoute
+  '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
-  '/generate': typeof GenerateRoute
-  '/inbox': typeof InboxRoute
-  '/renders': typeof RendersRoute
-  '/schedule': typeof ScheduleRoute
   '/settings': typeof SettingsRoute
+  '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
-  '/sources/github': typeof SourcesGithubRoute
-  '/sources/markdown': typeof SourcesMarkdownRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/connections'
+    | '/assets'
     | '/drafts'
-    | '/generate'
-    | '/inbox'
-    | '/renders'
-    | '/schedule'
     | '/settings'
+    | '/studio'
     | '/templates'
-    | '/sources/github'
-    | '/sources/markdown'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/connections'
-    | '/drafts'
-    | '/generate'
-    | '/inbox'
-    | '/renders'
-    | '/schedule'
-    | '/settings'
-    | '/templates'
-    | '/sources/github'
-    | '/sources/markdown'
+  to: '/' | '/assets' | '/drafts' | '/settings' | '/studio' | '/templates'
   id:
     | '__root__'
     | '/'
-    | '/connections'
+    | '/assets'
     | '/drafts'
-    | '/generate'
-    | '/inbox'
-    | '/renders'
-    | '/schedule'
     | '/settings'
+    | '/studio'
     | '/templates'
-    | '/sources/github'
-    | '/sources/markdown'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ConnectionsRoute: typeof ConnectionsRoute
+  AssetsRoute: typeof AssetsRoute
   DraftsRoute: typeof DraftsRoute
-  GenerateRoute: typeof GenerateRoute
-  InboxRoute: typeof InboxRoute
-  RendersRoute: typeof RendersRoute
-  ScheduleRoute: typeof ScheduleRoute
   SettingsRoute: typeof SettingsRoute
+  StudioRoute: typeof StudioRoute
   TemplatesRoute: typeof TemplatesRoute
-  SourcesGithubRoute: typeof SourcesGithubRoute
-  SourcesMarkdownRoute: typeof SourcesMarkdownRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -182,39 +111,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/schedule': {
-      id: '/schedule'
-      path: '/schedule'
-      fullPath: '/schedule'
-      preLoaderRoute: typeof ScheduleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/renders': {
-      id: '/renders'
-      path: '/renders'
-      fullPath: '/renders'
-      preLoaderRoute: typeof RendersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inbox': {
-      id: '/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate': {
-      id: '/generate'
-      path: '/generate'
-      fullPath: '/generate'
-      preLoaderRoute: typeof GenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/drafts': {
@@ -224,11 +132,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DraftsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/connections': {
-      id: '/connections'
-      path: '/connections'
-      fullPath: '/connections'
-      preLoaderRoute: typeof ConnectionsRouteImport
+    '/assets': {
+      id: '/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AssetsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -238,35 +146,16 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/sources/markdown': {
-      id: '/sources/markdown'
-      path: '/sources/markdown'
-      fullPath: '/sources/markdown'
-      preLoaderRoute: typeof SourcesMarkdownRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sources/github': {
-      id: '/sources/github'
-      path: '/sources/github'
-      fullPath: '/sources/github'
-      preLoaderRoute: typeof SourcesGithubRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ConnectionsRoute: ConnectionsRoute,
+  AssetsRoute: AssetsRoute,
   DraftsRoute: DraftsRoute,
-  GenerateRoute: GenerateRoute,
-  InboxRoute: InboxRoute,
-  RendersRoute: RendersRoute,
-  ScheduleRoute: ScheduleRoute,
   SettingsRoute: SettingsRoute,
+  StudioRoute: StudioRoute,
   TemplatesRoute: TemplatesRoute,
-  SourcesGithubRoute: SourcesGithubRoute,
-  SourcesMarkdownRoute: SourcesMarkdownRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

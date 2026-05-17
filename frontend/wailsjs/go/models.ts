@@ -1,3 +1,165 @@
+export namespace ai {
+	
+	export class Capabilities {
+	    streaming: boolean;
+	    vision: boolean;
+	    tools: boolean;
+	    thinking: boolean;
+	    promptCache: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Capabilities(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.streaming = source["streaming"];
+	        this.vision = source["vision"];
+	        this.tools = source["tools"];
+	        this.thinking = source["thinking"];
+	        this.promptCache = source["promptCache"];
+	    }
+	}
+	export class GenerateOutput {
+	    content: string;
+	    inputTokens: number;
+	    outputTokens: number;
+	    cacheRead: number;
+	    cacheWrite: number;
+	    model: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GenerateOutput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.content = source["content"];
+	        this.inputTokens = source["inputTokens"];
+	        this.outputTokens = source["outputTokens"];
+	        this.cacheRead = source["cacheRead"];
+	        this.cacheWrite = source["cacheWrite"];
+	        this.model = source["model"];
+	    }
+	}
+	export class Message {
+	    role: string;
+	    content: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Message(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.role = source["role"];
+	        this.content = source["content"];
+	    }
+	}
+	export class ModelInfo {
+	    id: string;
+	    name: string;
+	    contextSize: number;
+	    default: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new ModelInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.contextSize = source["contextSize"];
+	        this.default = source["default"];
+	    }
+	}
+	export class ProviderInfo {
+	    name: string;
+	    displayName: string;
+	    available: boolean;
+	    reason?: string;
+	    capabilities: Capabilities;
+	    models: ModelInfo[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ProviderInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.displayName = source["displayName"];
+	        this.available = source["available"];
+	        this.reason = source["reason"];
+	        this.capabilities = this.convertValues(source["capabilities"], Capabilities);
+	        this.models = this.convertValues(source["models"], ModelInfo);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
+export namespace application {
+	
+	export class GenerateRequest {
+	    provider: string;
+	    model: string;
+	    system: string;
+	    messages: ai.Message[];
+	    maxTokens: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GenerateRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.provider = source["provider"];
+	        this.model = source["model"];
+	        this.system = source["system"];
+	        this.messages = this.convertValues(source["messages"], ai.Message);
+	        this.maxTokens = source["maxTokens"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace draft {
 	
 	export class Draft {
@@ -43,6 +205,77 @@ export namespace draft {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace template {
+	
+	export class Size {
+	    width: number;
+	    height: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Size(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.width = source["width"];
+	        this.height = source["height"];
+	    }
+	}
+	export class RenderRequest {
+	    templateId: string;
+	    props: Record<string, any>;
+	    size: Size;
+	
+	    static createFrom(source: any = {}) {
+	        return new RenderRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.templateId = source["templateId"];
+	        this.props = source["props"];
+	        this.size = this.convertValues(source["size"], Size);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class RenderResult {
+	    path: string;
+	    width: number;
+	    height: number;
+	    sizeBytes: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new RenderResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.sizeBytes = source["sizeBytes"];
+	    }
 	}
 
 }
