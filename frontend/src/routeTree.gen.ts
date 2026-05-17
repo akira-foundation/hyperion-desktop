@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DraftsRouteImport } from './routes/drafts'
 import { Route as AssetsRouteImport } from './routes/assets'
@@ -24,6 +25,11 @@ const TemplatesRoute = TemplatesRouteImport.update({
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
   '/settings': typeof SettingsRoute
+  '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
   '/settings': typeof SettingsRoute
+  '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/assets': typeof AssetsRoute
   '/drafts': typeof DraftsRoute
   '/settings': typeof SettingsRoute
+  '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/templates': typeof TemplatesRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/assets'
     | '/drafts'
     | '/settings'
+    | '/skills'
     | '/studio'
     | '/templates'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assets' | '/drafts' | '/settings' | '/studio' | '/templates'
+  to:
+    | '/'
+    | '/assets'
+    | '/drafts'
+    | '/settings'
+    | '/skills'
+    | '/studio'
+    | '/templates'
   id:
     | '__root__'
     | '/'
     | '/assets'
     | '/drafts'
     | '/settings'
+    | '/skills'
     | '/studio'
     | '/templates'
   fileRoutesById: FileRoutesById
@@ -98,6 +116,7 @@ export interface RootRouteChildren {
   AssetsRoute: typeof AssetsRoute
   DraftsRoute: typeof DraftsRoute
   SettingsRoute: typeof SettingsRoute
+  SkillsRoute: typeof SkillsRoute
   StudioRoute: typeof StudioRoute
   TemplatesRoute: typeof TemplatesRoute
 }
@@ -116,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssetsRoute: AssetsRoute,
   DraftsRoute: DraftsRoute,
   SettingsRoute: SettingsRoute,
+  SkillsRoute: SkillsRoute,
   StudioRoute: StudioRoute,
   TemplatesRoute: TemplatesRoute,
 }

@@ -26,21 +26,30 @@ func New(baseURL string) *Driver {
 func (d *Driver) Name() string { return "rod" }
 
 func (d *Driver) Render(ctx context.Context, req template.RenderRequest) ([]byte, error) {
-	if req.Size.Width <= 0 || req.Size.Height <= 0 {
-		return nil, fmt.Errorf("renderer: invalid size %dx%d", req.Size.Width, req.Size.Height)
-	}
-
 	propsJSON, err := json.Marshal(req.Props)
 	if err != nil {
 		return nil, fmt.Errorf("renderer: marshal props: %w", err)
 	}
 	encoded := base64.RawURLEncoding.EncodeToString(propsJSON)
 
-	target := fmt.Sprintf("%s/?render=%s&props=%s",
+	target := fmt.Sprintf("%s/?render=%s&props=%s&slide=%d",
 		d.baseURL,
 		url.QueryEscape(req.TemplateID),
 		url.QueryEscape(encoded),
+		req.SlideIndex,
 	)
+
+	return d.capture(ctx, target, req.Size, true)
+}
+
+func (d *Driver) RenderURL(ctx context.Context, target string, size template.Size) ([]byte, error) {
+	return d.capture(ctx, target, size, false)
+}
+
+func (d *Driver) capture(ctx context.Context, target string, size template.Size, waitReady bool) ([]byte, error) {
+	if size.Width <= 0 || size.Height <= 0 {
+		return nil, fmt.Errorf("renderer: invalid size %dx%d", size.Width, size.Height)
+	}
 
 	launcher := launcher.New().
 		Headless(true).
@@ -65,8 +74,8 @@ func (d *Driver) Render(ctx context.Context, req template.RenderRequest) ([]byte
 		return nil, fmt.Errorf("renderer: page: %w", err)
 	}
 	if err := page.SetViewport(&proto.EmulationSetDeviceMetricsOverride{
-		Width:             req.Size.Width,
-		Height:            req.Size.Height,
+		Width:             size.Width,
+		Height:            size.Height,
 		DeviceScaleFactor: 2,
 		Mobile:            false,
 	}); err != nil {
@@ -80,9 +89,14 @@ func (d *Driver) Render(ctx context.Context, req template.RenderRequest) ([]byte
 		return nil, fmt.Errorf("renderer: wait load: %w", err)
 	}
 
-	if _, err := page.Timeout(10 * time.Second).
-		Element(`[data-render-ready="true"]`); err != nil {
-		return nil, fmt.Errorf("renderer: wait ready: %w", err)
+	if waitReady {
+		if _, err := page.Timeout(10 * time.Second).Element(`[data-render-ready="true"]`); err != nil {
+			return nil, fmt.Errorf("renderer: wait ready: %w", err)
+		}
+	} else {
+		// Static HTML: wait for fonts + a frame
+		_ = page.WaitIdle(2 * time.Second)
+		time.Sleep(250 * time.Millisecond)
 	}
 
 	img, err := page.Screenshot(true, &proto.PageCaptureScreenshot{
@@ -90,8 +104,8 @@ func (d *Driver) Render(ctx context.Context, req template.RenderRequest) ([]byte
 		Clip: &proto.PageViewport{
 			X:      0,
 			Y:      0,
-			Width:  float64(req.Size.Width),
-			Height: float64(req.Size.Height),
+			Width:  float64(size.Width),
+			Height: float64(size.Height),
 			Scale:  1,
 		},
 	})

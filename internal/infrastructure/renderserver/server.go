@@ -5,11 +5,13 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"strings"
 )
 
 type Server struct {
 	listener net.Listener
 	baseURL  string
+	mux      *http.ServeMux
 }
 
 func New(assets fs.FS) (*Server, error) {
@@ -29,6 +31,7 @@ func New(assets fs.FS) (*Server, error) {
 	return &Server{
 		listener: ln,
 		baseURL:  fmt.Sprintf("http://127.0.0.1:%d", addr.Port),
+		mux:      mux,
 	}, nil
 }
 
@@ -36,6 +39,24 @@ func (s *Server) BaseURL() string { return s.baseURL }
 
 func (s *Server) Close() error {
 	return s.listener.Close()
+}
+
+// MountUserTemplates serves files from userTemplatesDir under /user-templates/.
+// Path style: /user-templates/<slug>/<file>
+func (s *Server) MountUserTemplates(userTemplatesDir string) {
+	prefix := "/user-templates/"
+	s.mux.Handle(prefix, http.StripPrefix(prefix, safeFileServer(userTemplatesDir)))
+}
+
+func safeFileServer(root string) http.Handler {
+	fileSrv := http.FileServer(http.Dir(root))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.Path, "..") {
+			http.NotFound(w, r)
+			return
+		}
+		fileSrv.ServeHTTP(w, r)
+	})
 }
 
 type spaHandler struct {

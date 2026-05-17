@@ -4,15 +4,47 @@ import {draft} from '../models';
 import {application} from '../models';
 import {ai} from '../models';
 import {template} from '../models';
+import {main} from '../models';
+import {skill} from '../models';
 
 export function CreateDraft(arg1:string,arg2:string,arg3:string):Promise<draft.Draft>;
 
 export function DeleteDraft(arg1:string):Promise<void>;
 
+export function DeleteUserTemplate(arg1:string):Promise<void>;
+
 export function GenerateContent(arg1:application.GenerateRequest):Promise<ai.GenerateOutput>;
+
+export function GenerateContentStream(arg1:application.GenerateRequest):Promise<string>;
+
+export function GetUserTemplateFile(arg1:string,arg2:string):Promise<string>;
+
+export function ImportTemplate(arg1:application.SaveTemplateInput):Promise<template.RuntimeTemplate>;
+
+export function ImportTemplateFromFiles(arg1:string,arg2:string,arg3:string,arg4:template.Size,arg5:Array<main.ImportFile>):Promise<template.RuntimeTemplate>;
 
 export function ListAIProviders():Promise<Array<ai.ProviderInfo>>;
 
 export function ListDrafts():Promise<Array<draft.Draft>>;
 
+export function ListSkills():Promise<Array<skill.Skill>>;
+
+export function ListUserTemplates():Promise<Array<template.RuntimeTemplate>>;
+
+export function PickProjectFolder():Promise<string>;
+
+export function RenderBaseURL():Promise<string>;
+
+export function RenderCarousel(arg1:template.CarouselRenderRequest):Promise<template.CarouselRenderResult>;
+
 export function RenderTemplate(arg1:template.RenderRequest):Promise<template.RenderResult>;
+
+export function RenderUserTemplate(arg1:string,arg2:number):Promise<template.RenderResult>;
+
+export function RenderUserTemplateCarousel(arg1:string):Promise<template.CarouselRenderResult>;
+
+export function RunSkill(arg1:skill.RunRequest):Promise<skill.RunResult>;
+
+export function SaveSkillResultAsTemplate(arg1:string,arg2:string,arg3:string,arg4:string,arg5:template.Size):Promise<template.RuntimeTemplate>;
+
+export function SaveUserTemplateFile(arg1:string,arg2:string,arg3:string):Promise<void>;

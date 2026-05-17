@@ -10,8 +10,28 @@ export function DeleteDraft(arg1) {
   return window['go']['main']['App']['DeleteDraft'](arg1);
 }
 
+export function DeleteUserTemplate(arg1) {
+  return window['go']['main']['App']['DeleteUserTemplate'](arg1);
+}
+
 export function GenerateContent(arg1) {
   return window['go']['main']['App']['GenerateContent'](arg1);
+}
+
+export function GenerateContentStream(arg1) {
+  return window['go']['main']['App']['GenerateContentStream'](arg1);
+}
+
+export function GetUserTemplateFile(arg1, arg2) {
+  return window['go']['main']['App']['GetUserTemplateFile'](arg1, arg2);
+}
+
+export function ImportTemplate(arg1) {
+  return window['go']['main']['App']['ImportTemplate'](arg1);
+}
+
+export function ImportTemplateFromFiles(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['ImportTemplateFromFiles'](arg1, arg2, arg3, arg4, arg5);
 }
 
 export function ListAIProviders() {
@@ -22,6 +42,46 @@ export function ListDrafts() {
   return window['go']['main']['App']['ListDrafts']();
 }
 
+export function ListSkills() {
+  return window['go']['main']['App']['ListSkills']();
+}
+
+export function ListUserTemplates() {
+  return window['go']['main']['App']['ListUserTemplates']();
+}
+
+export function PickProjectFolder() {
+  return window['go']['main']['App']['PickProjectFolder']();
+}
+
+export function RenderBaseURL() {
+  return window['go']['main']['App']['RenderBaseURL']();
+}
+
+export function RenderCarousel(arg1) {
+  return window['go']['main']['App']['RenderCarousel'](arg1);
+}
+
 export function RenderTemplate(arg1) {
   return window['go']['main']['App']['RenderTemplate'](arg1);
+}
+
+export function RenderUserTemplate(arg1, arg2) {
+  return window['go']['main']['App']['RenderUserTemplate'](arg1, arg2);
+}
+
+export function RenderUserTemplateCarousel(arg1) {
+  return window['go']['main']['App']['RenderUserTemplateCarousel'](arg1);
+}
+
+export function RunSkill(arg1) {
+  return window['go']['main']['App']['RunSkill'](arg1);
+}
+
+export function SaveSkillResultAsTemplate(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['SaveSkillResultAsTemplate'](arg1, arg2, arg3, arg4, arg5);
+}
+
+export function SaveUserTemplateFile(arg1, arg2, arg3) {
+  return window['go']['main']['App']['SaveUserTemplateFile'](arg1, arg2, arg3);
 }

@@ -157,6 +157,46 @@ export namespace application {
 		    return a;
 		}
 	}
+	export class SaveTemplateInput {
+	    sourceDir: string;
+	    name: string;
+	    description: string;
+	    category: string;
+	    source: string;
+	    size: template.Size;
+	
+	    static createFrom(source: any = {}) {
+	        return new SaveTemplateInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.sourceDir = source["sourceDir"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.category = source["category"];
+	        this.source = source["source"];
+	        this.size = this.convertValues(source["size"], template.Size);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 
 }
 
@@ -209,6 +249,118 @@ export namespace draft {
 
 }
 
+export namespace main {
+	
+	export class ImportFile {
+	    path: string;
+	    content: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ImportFile(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.content = source["content"];
+	    }
+	}
+
+}
+
+export namespace skill {
+	
+	export class GeneratedFile {
+	    path: string;
+	    kind: string;
+	    size: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GeneratedFile(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.kind = source["kind"];
+	        this.size = source["size"];
+	    }
+	}
+	export class RunRequest {
+	    skillId: string;
+	    projectPath: string;
+	    provider: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.skillId = source["skillId"];
+	        this.projectPath = source["projectPath"];
+	        this.provider = source["provider"];
+	    }
+	}
+	export class RunResult {
+	    outputDir: string;
+	    files: GeneratedFile[];
+	    caption: string;
+	    log: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RunResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.outputDir = source["outputDir"];
+	        this.files = this.convertValues(source["files"], GeneratedFile);
+	        this.caption = source["caption"];
+	        this.log = source["log"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Skill {
+	    id: string;
+	    name: string;
+	    description: string;
+	    category: string;
+	    tags: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Skill(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.category = source["category"];
+	        this.tags = source["tags"];
+	    }
+	}
+
+}
+
 export namespace template {
 	
 	export class Size {
@@ -225,20 +377,22 @@ export namespace template {
 	        this.height = source["height"];
 	    }
 	}
-	export class RenderRequest {
+	export class CarouselRenderRequest {
 	    templateId: string;
-	    props: Record<string, any>;
+	    payload: Record<string, any>;
 	    size: Size;
+	    slideCount: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new RenderRequest(source);
+	        return new CarouselRenderRequest(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.templateId = source["templateId"];
-	        this.props = source["props"];
+	        this.payload = source["payload"];
 	        this.size = this.convertValues(source["size"], Size);
+	        this.slideCount = source["slideCount"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -276,6 +430,140 @@ export namespace template {
 	        this.height = source["height"];
 	        this.sizeBytes = source["sizeBytes"];
 	    }
+	}
+	export class CarouselRenderResult {
+	    directory: string;
+	    files: RenderResult[];
+	
+	    static createFrom(source: any = {}) {
+	        return new CarouselRenderResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.directory = source["directory"];
+	        this.files = this.convertValues(source["files"], RenderResult);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class RenderRequest {
+	    templateId: string;
+	    props: Record<string, any>;
+	    size: Size;
+	    slideIndex: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new RenderRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.templateId = source["templateId"];
+	        this.props = source["props"];
+	        this.size = this.convertValues(source["size"], Size);
+	        this.slideIndex = source["slideIndex"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	
+	export class RuntimeSlide {
+	    index: number;
+	    filename: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RuntimeSlide(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.index = source["index"];
+	        this.filename = source["filename"];
+	    }
+	}
+	export class RuntimeTemplate {
+	    id: string;
+	    slug: string;
+	    name: string;
+	    description: string;
+	    category: string;
+	    kind: string;
+	    size: Size;
+	    source: string;
+	    slides: RuntimeSlide[];
+	    assets: string[];
+	    // Go type: time
+	    createdAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new RuntimeTemplate(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.slug = source["slug"];
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.category = source["category"];
+	        this.kind = source["kind"];
+	        this.size = this.convertValues(source["size"], Size);
+	        this.source = source["source"];
+	        this.slides = this.convertValues(source["slides"], RuntimeSlide);
+	        this.assets = source["assets"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }

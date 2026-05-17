@@ -12,7 +12,11 @@ export const aiQueryKeys = {
 export function useAIProviders() {
   return useQuery({
     queryKey: aiQueryKeys.providers,
-    queryFn: async () => (await ListAIProviders()) as ai.ProviderInfo[],
+    queryFn: async () => {
+      const result = (await ListAIProviders()) as ai.ProviderInfo[];
+      console.log("[hyperion] ListAIProviders returned:", result);
+      return result;
+    },
     staleTime: 60_000,
   });
 }

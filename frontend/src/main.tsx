@@ -15,8 +15,13 @@ const renderTemplate = params.get("render");
 
 if (renderTemplate) {
   document.body.style.background = "transparent";
+  const slideIndex = Number(params.get("slide") ?? "0");
   createRoot(container).render(
-    <RenderEntry templateId={renderTemplate} encodedProps={params.get("props") ?? ""} />,
+    <RenderEntry
+      templateId={renderTemplate}
+      encodedProps={params.get("props") ?? ""}
+      slideIndex={Number.isFinite(slideIndex) ? slideIndex : 0}
+    />,
   );
 } else {
   createRoot(container).render(

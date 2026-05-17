@@ -1,11 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { StudioPage } from "@/features/studio/StudioPage";
 
-export const Route = createFileRoute("/studio")({
-  component: () => (
-    <PlaceholderPage
-      title="Studio"
-      description="Input → template → AI copy → branded asset. Coming next."
-    />
-  ),
-});
+export const Route = createFileRoute("/studio")({ component: StudioPage });

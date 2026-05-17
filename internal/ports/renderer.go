@@ -9,4 +9,5 @@ import (
 type Renderer interface {
 	Name() string
 	Render(ctx context.Context, req template.RenderRequest) ([]byte, error)
+	RenderURL(ctx context.Context, url string, size template.Size) ([]byte, error)
 }

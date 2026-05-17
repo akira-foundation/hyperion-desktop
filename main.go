@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"io/fs"
 	"log"
@@ -18,8 +19,11 @@ import (
 	"hyperion-desktop/internal/drivers/ai/claudecli"
 	"hyperion-desktop/internal/drivers/ai/openai"
 	"hyperion-desktop/internal/drivers/renderer/rod"
+	skillclaudecli "hyperion-desktop/internal/drivers/skills/claudecli"
 	"hyperion-desktop/internal/infrastructure/renderserver"
 	"hyperion-desktop/internal/infrastructure/sqlite"
+	"hyperion-desktop/internal/infrastructure/usertemplates"
+	"hyperion-desktop/internal/skills"
 )
 
 //go:embed all:frontend/dist
@@ -50,8 +54,16 @@ func main() {
 	}
 	defer renderSrv.Close()
 
+	userTemplateStore, err := usertemplates.NewStore(filepath.Join(dataDir, "templates"))
+	if err != nil {
+		log.Fatalf("usertemplates: %v", err)
+	}
+	renderSrv.MountUserTemplates(userTemplateStore.Dir())
+	log.Printf("[hyperion] user templates dir: %s", userTemplateStore.Dir())
+
 	renderer := rod.New(renderSrv.BaseURL())
 	renderService := application.NewRenderService(renderer)
+	templateService := application.NewTemplateService(userTemplateStore, renderer, renderSrv.BaseURL())
 
 	draftRepo := sqlite.NewDraftRepository(db)
 	draftService := application.NewDraftService(draftRepo)
@@ -60,9 +72,15 @@ func main() {
 	aiRegistry.Register(claudecli.New())
 	aiRegistry.Register(anthropic.New(os.Getenv("ANTHROPIC_API_KEY")))
 	aiRegistry.Register(openai.New(os.Getenv("OPENAI_API_KEY")))
+	log.Printf("[hyperion] AI providers registered: %v", aiRegistry.List(context.Background()))
 	aiService := application.NewAIService(aiRegistry)
 
-	app := NewApp(draftService, aiService, renderService)
+	skillRegistry := skills.NewRegistry()
+	skillRunner := skillclaudecli.New()
+	skillService := application.NewSkillService(skillRegistry, skillRunner)
+	log.Printf("[hyperion] Skills bundled: %v", skillRegistry.List())
+
+	app := NewApp(draftService, aiService, renderService, skillService, templateService, renderSrv.BaseURL())
 
 	if err := wails.Run(&options.App{
 		Title:                    "Hyperion",

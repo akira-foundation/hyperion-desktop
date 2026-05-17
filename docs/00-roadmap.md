@@ -2,6 +2,28 @@
 
 Phased delivery plan for Hyperion. Each phase ships a working slice. MVP = Phases 1–7. Cloud/auto-publish post-MVP.
 
+## Audience & vertical scope
+
+Hyperion is a **universal AI-powered content OS** — not dev-only. The platform serves:
+creators, founders, developers, photographers, designers, agencies, marketers, educators, content creators, brands.
+
+Architecture, templates, and workflows must remain niche-agnostic. Developer-related sources
+(GitHub, changelogs, releases) are one of many supported workflows, not the default. The template
+registry, AI hints, and content pipelines must support every vertical without coupling.
+
+### Template vertical plan (rolling)
+
+| Category | Template ID | Purpose | Status |
+|---|---|---|---|
+| Storytelling | `quote-card` | Typographic quote w/ author/source | shipped |
+| Developer | `changelog-card` | Release notes / version updates | shipped |
+| Photography | `photo-showcase` | Image showcase w/ EXIF / caption | planned |
+| Marketing | `product-launch` | SaaS/startup launch announcement | planned |
+| Education | `lesson-card` | Course/tutorial snippet | planned |
+| Personal | `portfolio-cover` | Designer/creator portfolio piece | planned |
+| Storytelling | `story-vertical` (9:16) | Universal vertical story format | planned |
+| Marketing | `linkedin-card` (1.91:1) | LinkedIn-optimized horizontal | planned |
+
 ---
 
 ## Phase 1 — Foundation (DONE)

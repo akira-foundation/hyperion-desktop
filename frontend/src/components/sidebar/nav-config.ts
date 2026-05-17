@@ -6,6 +6,7 @@ import {
   PenLine,
   Image,
   Settings,
+  Sparkles,
 } from "lucide-react";
 
 export interface NavItem {
@@ -27,6 +28,7 @@ export const navSections: NavSection[] = [
     items: [
       { to: "/", label: "Home", icon: Home },
       { to: "/studio", label: "Studio", icon: Wand2 },
+      { to: "/skills", label: "Skills", icon: Sparkles },
     ],
   },
   {
