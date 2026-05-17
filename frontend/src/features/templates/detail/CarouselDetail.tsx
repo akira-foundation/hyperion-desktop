@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertCircle, Check, Image as ImageIcon } from "lucide-react";
+import { AlertCircle, Check, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { AnyCarouselTemplateMeta } from "@/templates/types";
 import { useRenderCarousel } from "@/services/render";
@@ -16,6 +16,7 @@ export function CarouselDetail({ meta, picker }: CarouselDetailProps) {
   const [shared, setShared] = useState<Record<string, unknown>>(meta.defaultShared);
   const [slides, setSlides] = useState<Record<string, unknown>[]>(meta.defaultSlides);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const render = useRenderCarousel();
 
   const idx = Math.max(0, Math.min(slideIndex, slides.length - 1));
@@ -55,12 +56,36 @@ export function CarouselDetail({ meta, picker }: CarouselDetailProps) {
         </section>
 
         <section className="mt-6 border-t border-white/[0.06] pt-5">
-          <SectionHeading>
-            Slide {idx + 1}
-            <span className="ml-1.5 text-[11px] font-normal text-white/40">
-              of {slides.length}
-            </span>
-          </SectionHeading>
+          <div className="mb-3 flex items-center justify-between">
+            <SectionHeading>
+              Slide {idx + 1}
+              <span className="ml-1.5 text-[11px] font-normal text-white/40">
+                of {slides.length}
+              </span>
+            </SectionHeading>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => setSlideIndex(Math.max(0, idx - 1))}
+                disabled={idx === 0}
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                title="Previous slide"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setSlideIndex(Math.min(slides.length - 1, idx + 1))}
+                disabled={idx === slides.length - 1}
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                title="Next slide"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
           <PropsEditor
             defaults={meta.defaultSlides[0] as Record<string, unknown>}
             value={currentSlide}
@@ -113,28 +138,31 @@ export function CarouselDetail({ meta, picker }: CarouselDetailProps) {
             payload={{ shared, slides }}
             slideIndex={idx}
             onSlideChange={setSlideIndex}
+            onPreviewChange={setPreviewOpen}
           />
         </div>
-        <div className="flex items-center justify-center gap-2 border-t border-white/[0.06] px-4 py-2">
-          <div className="flex gap-1">
-            <button
-              type="button"
-              onClick={removeSlide}
-              disabled={slides.length <= meta.minSlides}
-              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/55 hover:bg-white/[0.06] disabled:opacity-30"
-            >
-              − Slide
-            </button>
-            <button
-              type="button"
-              onClick={addSlide}
-              disabled={slides.length >= meta.maxSlides}
-              className="h-7 rounded-md px-2 text-[11px] font-medium text-white/65 hover:bg-white/[0.06] disabled:opacity-30"
-            >
-              + Slide
-            </button>
+        {previewOpen ? null : (
+          <div className="flex items-center justify-center gap-2 border-t border-white/[0.06] px-4 py-2">
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={removeSlide}
+                disabled={slides.length <= meta.minSlides}
+                className="h-7 rounded-md px-2 text-[11px] font-medium text-white/55 hover:bg-white/[0.06] disabled:opacity-30"
+              >
+                − Slide
+              </button>
+              <button
+                type="button"
+                onClick={addSlide}
+                disabled={slides.length >= meta.maxSlides}
+                className="h-7 rounded-md px-2 text-[11px] font-medium text-white/65 hover:bg-white/[0.06] disabled:opacity-30"
+              >
+                + Slide
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
