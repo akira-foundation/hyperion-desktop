@@ -133,6 +133,20 @@ export namespace application {
 	        this.base64 = source["base64"];
 	    }
 	}
+	export class EditTemplateInput {
+	    id: string;
+	    prompt: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EditTemplateInput(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.prompt = source["prompt"];
+	    }
+	}
 	export class GenerateImageRequest {
 	    provider: string;
 	    model: string;
@@ -712,6 +726,24 @@ export namespace template {
 		    return a;
 		}
 	}
+	export class GenerationRecord {
+	    prompt: string;
+	    urls?: string[];
+	    localRefs?: string[];
+	    attachments?: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new GenerationRecord(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.prompt = source["prompt"];
+	        this.urls = source["urls"];
+	        this.localRefs = source["localRefs"];
+	        this.attachments = source["attachments"];
+	    }
+	}
 	export class RenderRequest {
 	    templateId: string;
 	    props: Record<string, any>;
@@ -776,6 +808,7 @@ export namespace template {
 	    assets: string[];
 	    // Go type: time
 	    createdAt: any;
+	    generation?: GenerationRecord;
 	
 	    static createFrom(source: any = {}) {
 	        return new RuntimeTemplate(source);
@@ -794,6 +827,7 @@ export namespace template {
 	        this.slides = this.convertValues(source["slides"], RuntimeSlide);
 	        this.assets = source["assets"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.generation = this.convertValues(source["generation"], GenerationRecord);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

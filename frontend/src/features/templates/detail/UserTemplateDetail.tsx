@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, Trash2 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { AlertCircle, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useDeleteUserTemplate, useRenderBaseURL } from "@/services/templates";
 import type { template } from "../../../../wailsjs/go/models";
@@ -7,6 +8,7 @@ import { CanvasView } from "../CanvasView";
 import { Chip } from "../form/Chip";
 import { SectionHeading } from "../form/SectionHeading";
 import { aspectFromSize } from "../lib/aspect";
+import { AIEditComposer } from "./AIEditComposer";
 
 interface UserTemplateDetailProps {
   template: template.RuntimeTemplate;
@@ -18,6 +20,11 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
   const baseURLQuery = useRenderBaseURL();
   const baseURL = baseURLQuery.data ?? "";
   const deleteMut = useDeleteUserTemplate();
+  const navigate = useNavigate();
+
+  function onEdit() {
+    navigate({ to: "/studio", search: { template: `user:${t.id}` } });
+  }
 
   function onDelete() {
     if (!window.confirm(`Delete template "${t.name}"? This cannot be undone.`)) return;
@@ -97,11 +104,16 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
           </section>
         ) : null}
 
+        <Button onClick={onEdit} className="mt-5 w-full">
+          <Pencil className="h-4 w-4" strokeWidth={2.25} />
+          Edit in Studio
+        </Button>
+
         <Button
           variant="outline"
           onClick={onDelete}
           disabled={deleteMut.isPending}
-          className="mt-5 w-full"
+          className="mt-2 w-full"
         >
           <Trash2 className="h-4 w-4" strokeWidth={2} />
           {deleteMut.isPending ? "Deleting..." : "Delete template"}
@@ -113,7 +125,7 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
           </div>
         ) : null}
       </aside>
-      <div className="flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
+      <div className="relative flex flex-1 overflow-hidden bg-black/30 rounded-[20px] shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">
         <CanvasView
           meta={fakeMeta}
           payload={{}}
@@ -121,6 +133,7 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
           onSlideChange={setSlideIndex}
           slideUrls={slideUrls}
         />
+        <AIEditComposer templateId={t.id} />
       </div>
     </div>
   );

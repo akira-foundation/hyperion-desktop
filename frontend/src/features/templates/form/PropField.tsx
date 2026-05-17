@@ -1,8 +1,16 @@
+import { Switch } from "@/components/ui/switch";
+
 interface PropFieldProps {
   name: string;
   value: unknown;
   onChange: (v: unknown) => void;
 }
+
+const BINARY_ENUMS: Record<string, [string, string]> = {
+  background: ["light", "dark"],
+  theme: ["light", "dark"],
+  mode: ["light", "dark"],
+};
 
 export function PropField({ name, value, onChange }: PropFieldProps) {
   const label = (
@@ -10,6 +18,41 @@ export function PropField({ name, value, onChange }: PropFieldProps) {
       {name}
     </span>
   );
+
+  const binaryPair = BINARY_ENUMS[name.toLowerCase()];
+  if (
+    binaryPair &&
+    typeof value === "string" &&
+    (value === binaryPair[0] || value === binaryPair[1])
+  ) {
+    const checked = value === binaryPair[1];
+    return (
+      <label className="flex items-center justify-between gap-3">
+        <span className="block text-[10.5px] font-medium uppercase tracking-[0.08em] text-white/40">
+          {name}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11.5px] text-white/65">{value}</span>
+          <Switch
+            checked={checked}
+            onCheckedChange={(next) => onChange(next ? binaryPair[1] : binaryPair[0])}
+            ariaLabel={name}
+          />
+        </div>
+      </label>
+    );
+  }
+
+  if (typeof value === "boolean") {
+    return (
+      <label className="flex items-center justify-between gap-3">
+        <span className="block text-[10.5px] font-medium uppercase tracking-[0.08em] text-white/40">
+          {name}
+        </span>
+        <Switch checked={value} onCheckedChange={onChange} ariaLabel={name} />
+      </label>
+    );
+  }
 
   if (Array.isArray(value)) {
     return (

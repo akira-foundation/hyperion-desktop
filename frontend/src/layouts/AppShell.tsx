@@ -23,7 +23,7 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div
-      className="flex h-full w-full gap-2 p-2"
+      className="drag flex h-full w-full gap-2 p-2"
       style={{
         background:
           "radial-gradient(120% 80% at 0% 0%, rgba(56,189,248,0.03) 0%, transparent 55%), radial-gradient(120% 80% at 100% 100%, rgba(168,85,247,0.03) 0%, transparent 55%), rgba(10,10,12,0.30)",

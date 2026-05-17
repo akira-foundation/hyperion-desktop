@@ -22,6 +22,10 @@ export function DeleteUserTemplate(arg1) {
   return window['go']['main']['App']['DeleteUserTemplate'](arg1);
 }
 
+export function EditTemplateWithAI(arg1) {
+  return window['go']['main']['App']['EditTemplateWithAI'](arg1);
+}
+
 export function ExportPathsAsZIP(arg1, arg2) {
   return window['go']['main']['App']['ExportPathsAsZIP'](arg1, arg2);
 }

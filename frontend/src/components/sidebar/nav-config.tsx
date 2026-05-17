@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Hexagon,
   Palette,
-  Atom,
+  Workflow,
   LayoutPanelTop,
   NotebookPen,
   Images,
@@ -28,7 +28,7 @@ export const navSections: NavSection[] = [
     items: [
       { to: "/", label: "Home", icon: Hexagon },
       { to: "/studio", label: "Studio", icon: Palette },
-      { to: "/skills", label: "Skills", icon: Atom },
+      { to: "/skills", label: "Skills", icon: Workflow },
     ],
   },
   {

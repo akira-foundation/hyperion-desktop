@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { AlertCircle, LayoutGrid, Sparkles, Upload } from "lucide-react";
+import { AlertCircle, FolderInput, ListOrdered, Plus } from "lucide-react";
 import { templatesByCategory } from "@/templates/registry";
 import type { template } from "../../../../wailsjs/go/models";
 import type { Selection } from "../lib/types";
@@ -63,15 +63,7 @@ export function TemplatePicker({
             className="flex h-7 w-7 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white"
             title="Browse templates"
           >
-            <LayoutGrid className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={onCreateWithAI}
-            className="flex h-7 w-7 items-center justify-center rounded text-(--color-primary) hover:bg-white/[0.06]"
-            title="Create with Claude AI"
-          >
-            <Sparkles className="h-4 w-4" />
+            <ListOrdered className="h-4 w-4" />
           </button>
           <button
             type="button"
@@ -80,7 +72,15 @@ export function TemplatePicker({
             className="flex h-7 w-7 items-center justify-center rounded text-white/55 hover:bg-white/[0.06] hover:text-white disabled:opacity-30"
             title="Import template folder"
           >
-            <Upload className="h-4 w-4" />
+            <FolderInput className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onCreateWithAI}
+            className="flex h-7 w-7 items-center justify-center rounded text-(--color-primary) hover:bg-white/[0.06]"
+            title="Create with Claude AI"
+          >
+            <Plus className="h-4 w-4" />
           </button>
         </div>
       </div>

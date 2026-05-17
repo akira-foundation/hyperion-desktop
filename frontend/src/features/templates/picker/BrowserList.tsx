@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Pencil } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -16,6 +16,8 @@ interface BrowserListProps {
   currentValue: string;
   previewKey: string;
   onPreview: (key: string) => void;
+  onUse: (key: string) => void;
+  onEdit?: (key: string) => void;
 }
 
 export function BrowserList({
@@ -24,6 +26,8 @@ export function BrowserList({
   currentValue,
   previewKey,
   onPreview,
+  onUse,
+  onEdit,
 }: BrowserListProps) {
   return (
     <Command
@@ -39,19 +43,17 @@ export function BrowserList({
             {g.items.map((t) => {
               const v = `builtin:${t.id}`;
               return (
-                <CommandItem
+                <Row
                   key={t.id}
                   value={v}
+                  name={t.name}
+                  subtitle={`${t.aspectRatio} · ${t.size.width}×${t.size.height}`}
                   keywords={[t.name, t.aspectRatio, g.category]}
-                  onSelect={() => onPreview(v)}
-                  className="!rounded-[10px] !py-2 !pl-2.5 !pr-2.5 data-[selected=true]:bg-white/[0.06]"
-                >
-                  <BrowserItem
-                    title={t.name}
-                    subtitle={`${t.aspectRatio} · ${t.size.width}×${t.size.height}`}
-                    selected={currentValue === v}
-                  />
-                </CommandItem>
+                  selected={currentValue === v}
+                  onPreview={onPreview}
+                  onUse={onUse}
+                  onEdit={onEdit}
+                />
               );
             })}
           </CommandGroup>
@@ -61,19 +63,17 @@ export function BrowserList({
             {userTemplates.map((t) => {
               const v = `user:${t.id}`;
               return (
-                <CommandItem
+                <Row
                   key={t.id}
                   value={v}
+                  name={t.name}
+                  subtitle={`${t.slides.length} slides · ${t.size.width}×${t.size.height}`}
                   keywords={[t.name, t.category]}
-                  onSelect={() => onPreview(v)}
-                  className="!rounded-[10px] !py-2 !pl-2.5 !pr-2.5 data-[selected=true]:bg-white/[0.06]"
-                >
-                  <BrowserItem
-                    title={t.name}
-                    subtitle={`${t.slides.length} slides · ${t.size.width}×${t.size.height}`}
-                    selected={currentValue === v}
-                  />
-                </CommandItem>
+                  selected={currentValue === v}
+                  onPreview={onPreview}
+                  onUse={onUse}
+                  onEdit={onEdit}
+                />
               );
             })}
           </CommandGroup>
@@ -83,24 +83,62 @@ export function BrowserList({
   );
 }
 
-function BrowserItem({
-  title,
-  subtitle,
-  selected,
-}: {
-  title: string;
+interface RowProps {
+  value: string;
+  name: string;
   subtitle: string;
+  keywords: string[];
   selected: boolean;
-}) {
+  onPreview: (key: string) => void;
+  onUse: (key: string) => void;
+  onEdit?: (key: string) => void;
+}
+
+function Row({ value, name, subtitle, keywords, selected, onUse, onEdit }: RowProps) {
   return (
-    <>
-      <div className="flex w-full flex-col gap-0.5">
-        <span className="truncate text-[12.5px] font-medium text-white">{title}</span>
-        <span className="truncate text-[10.5px] text-white/45">{subtitle}</span>
+    <CommandItem
+      value={value}
+      keywords={keywords}
+      className="group/row !rounded-[10px] !py-2 !pl-2.5 !pr-1.5 data-[selected=true]:bg-white/[0.06]"
+    >
+      <div className="flex w-full items-center gap-2">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate text-[12.5px] font-medium text-white">{name}</span>
+          <span className="truncate text-[10.5px] text-white/45">{subtitle}</span>
+        </div>
+        <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover/row:opacity-100 group-data-[selected=true]/row:opacity-100">
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(value);
+              }}
+              title="Modify with Claude"
+              aria-label="Modify with Claude"
+              className="flex h-6 w-6 items-center justify-center rounded text-white/55 hover:bg-white/[0.08] hover:text-white"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUse(value);
+            }}
+            className="ml-0.5 h-6 rounded-md bg-(--color-primary) px-2 text-[10.5px] font-semibold text-(--color-primary-foreground) shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.15)] hover:brightness-110"
+          >
+            Use
+          </button>
+        </div>
+        {selected ? (
+          <Check
+            className="h-3.5 w-3.5 shrink-0 text-(--color-primary) group-hover/row:hidden group-data-[selected=true]/row:hidden"
+            strokeWidth={2.5}
+          />
+        ) : null}
       </div>
-      {selected ? (
-        <Check className="h-3.5 w-3.5 shrink-0 text-(--color-primary)" strokeWidth={2.5} />
-      ) : null}
-    </>
+    </CommandItem>
   );
 }

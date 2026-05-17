@@ -7,7 +7,6 @@ import type { template } from "../../../../wailsjs/go/models";
 import { CanvasView } from "../CanvasView";
 import type { Selection } from "../lib/types";
 import { BrowserList } from "./BrowserList";
-import { PreviewInfoCard } from "./PreviewInfoCard";
 import { usePreviewMeta } from "./usePreviewMeta";
 
 interface TemplateBrowserProps {
@@ -16,6 +15,7 @@ interface TemplateBrowserProps {
   selection: Selection;
   onSelect: (s: Selection) => void;
   onClose: () => void;
+  onEdit?: (key: string) => void;
 }
 
 export function TemplateBrowser({
@@ -24,6 +24,7 @@ export function TemplateBrowser({
   selection,
   onSelect,
   onClose,
+  onEdit,
 }: TemplateBrowserProps) {
   const currentValue =
     selection.kind === "user" ? `user:${selection.id}` : `builtin:${selection.id}`;
@@ -59,11 +60,9 @@ export function TemplateBrowser({
           currentValue={currentValue}
           previewKey={previewKey}
           onPreview={setPreviewKey}
+          onUse={selectKey}
+          onEdit={onEdit}
         />
-
-        {previewMeta ? (
-          <PreviewInfoCard preview={previewMeta} onUse={() => selectKey(previewKey)} />
-        ) : null}
       </aside>
 
       <div className="flex flex-1 overflow-hidden rounded-[20px] bg-black/30 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.05)]">

@@ -17,10 +17,18 @@ type RuntimeTemplate struct {
 	Category    string         `json:"category"`
 	Kind        RuntimeKind    `json:"kind"`
 	Size        Size           `json:"size"`
-	Source      string         `json:"source"` // skill | import | ai-gen
+	Source      string         `json:"source"`
 	Slides      []RuntimeSlide `json:"slides"`
-	Assets      []string       `json:"assets"` // shared assets (e.g. styles.css)
+	Assets      []string       `json:"assets"`
 	CreatedAt   time.Time      `json:"createdAt"`
+	Generation  *GenerationRecord `json:"generation,omitempty"`
+}
+
+type GenerationRecord struct {
+	Prompt     string   `json:"prompt"`
+	URLs       []string `json:"urls,omitempty"`
+	LocalRefs  []string `json:"localRefs,omitempty"`
+	Attachments []string `json:"attachments,omitempty"`
 }
 
 type RuntimeSlide struct {

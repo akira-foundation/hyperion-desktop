@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearch } from "@tanstack/react-router";
 import {
   Image as ImageIcon,
   AlertCircle,
@@ -23,7 +24,17 @@ export function StudioPage() {
   const userTemplatesQuery = useUserTemplates();
   const userTemplates = userTemplatesQuery.data ?? [];
 
-  const [selectionKey, setSelectionKey] = useState<string>(aiTemplates[0]?.id ?? "");
+  const search = useSearch({ from: "/studio" });
+  const [selectionKey, setSelectionKey] = useState<string>(
+    search.template ?? aiTemplates[0]?.id ?? "",
+  );
+
+  useEffect(() => {
+    if (search.template && search.template !== selectionKey) {
+      setSelectionKey(search.template);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.template]);
   const isUserSel = selectionKey.startsWith("user:");
   const userTemplate = isUserSel
     ? userTemplates.find((u) => `user:${u.id}` === selectionKey)

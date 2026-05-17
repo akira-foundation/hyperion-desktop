@@ -10,6 +10,7 @@ import {
   GetUserTemplateFile,
   SaveUserTemplateFile,
   GenerateTemplateFromAI,
+  EditTemplateWithAI,
   PickReferenceFiles,
 } from "../../wailsjs/go/main/App";
 import type { application, template } from "../../wailsjs/go/models";
@@ -108,6 +109,18 @@ export function useGenerateTemplateFromAI() {
     mutationFn: async (input: application.GenerateTemplateInput) =>
       (await GenerateTemplateFromAI(input)) as template.RuntimeTemplate,
     onSuccess: () => qc.invalidateQueries({ queryKey: templateQueryKeys.user }),
+  });
+}
+
+export function useEditTemplateWithAI() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; prompt: string }) =>
+      (await EditTemplateWithAI(input as application.EditTemplateInput)) as template.RuntimeTemplate,
+    onSuccess: (t) => {
+      qc.invalidateQueries({ queryKey: templateQueryKeys.user });
+      qc.invalidateQueries({ queryKey: ["templates", "user", t.id] });
+    },
   });
 }
 
