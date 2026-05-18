@@ -14,12 +14,12 @@ func ResolveClaude() (string, error) {
 	resolved, err := shell.NewResolver().
 		Lookup(binaryStem + osinfo.ExecutableExtension()).
 		Lookup(binaryStem).
-		Fallbacks(claudeCandidatePaths()).
+		Lookups(claudeCandidatePaths()).
 		Resolve()
 	if err != nil {
 		return "", err
 	}
-	return resolved.AbsolutePath(), nil
+	return resolved, nil
 }
 
 func claudeCandidatePaths() []string {

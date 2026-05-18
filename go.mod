@@ -3,7 +3,7 @@ module hyperion-desktop
 go 1.25.0
 
 require (
-	github.com/akira-io/onyx v1.0.1
+	github.com/akira-io/onyx v1.0.2
 	github.com/anthropics/anthropic-sdk-go v1.43.0
 	github.com/go-rod/rod v0.116.2
 	github.com/google/uuid v1.6.0
