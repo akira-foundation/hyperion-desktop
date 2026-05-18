@@ -4,17 +4,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/akira-io/desktopkit/osinfo"
-	"github.com/akira-io/desktopkit/shell"
+	"github.com/akira-io/onyx/osinfo"
+	"github.com/akira-io/onyx/shell"
 )
 
 const binaryStem = "claude"
 
 func ResolveClaude() (string, error) {
-	resolved, err := shell.NewCandidates().
-		WithName(binaryStem + osinfo.ExecutableExtension()).
-		WithName(binaryStem).
-		WithCandidates(claudeCandidatePaths()).
+	resolved, err := shell.NewResolver().
+		Lookup(binaryStem + osinfo.ExecutableExtension()).
+		Lookup(binaryStem).
+		Fallbacks(claudeCandidatePaths()).
 		Resolve()
 	if err != nil {
 		return "", err

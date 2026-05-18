@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/akira-io/desktopkit/files"
+	"github.com/akira-io/onyx/files"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"hyperion-desktop/internal/application"
