@@ -218,6 +218,7 @@ export namespace application {
 	    attachments: Attachment[];
 	    localRefs: string[];
 	    urls: string[];
+	    formats?: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new GenerateTemplateInput(source);
@@ -235,6 +236,7 @@ export namespace application {
 	        this.attachments = this.convertValues(source["attachments"], Attachment);
 	        this.localRefs = source["localRefs"];
 	        this.urls = source["urls"];
+	        this.formats = source["formats"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -731,6 +733,7 @@ export namespace template {
 	    urls?: string[];
 	    localRefs?: string[];
 	    attachments?: string[];
+	    formats?: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new GenerationRecord(source);
@@ -742,6 +745,7 @@ export namespace template {
 	        this.urls = source["urls"];
 	        this.localRefs = source["localRefs"];
 	        this.attachments = source["attachments"];
+	        this.formats = source["formats"];
 	    }
 	}
 	export class RenderRequest {
@@ -784,6 +788,7 @@ export namespace template {
 	export class RuntimeSlide {
 	    index: number;
 	    filename: string;
+	    files?: Record<string, string>;
 	
 	    static createFrom(source: any = {}) {
 	        return new RuntimeSlide(source);
@@ -793,6 +798,7 @@ export namespace template {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.index = source["index"];
 	        this.filename = source["filename"];
+	        this.files = source["files"];
 	    }
 	}
 	export class RuntimeTemplate {
@@ -806,6 +812,8 @@ export namespace template {
 	    source: string;
 	    slides: RuntimeSlide[];
 	    assets: string[];
+	    formats?: string[];
+	    formatSizes?: Record<string, Size>;
 	    // Go type: time
 	    createdAt: any;
 	    generation?: GenerationRecord;
@@ -826,6 +834,8 @@ export namespace template {
 	        this.source = source["source"];
 	        this.slides = this.convertValues(source["slides"], RuntimeSlide);
 	        this.assets = source["assets"];
+	        this.formats = source["formats"];
+	        this.formatSizes = this.convertValues(source["formatSizes"], Size, true);
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.generation = this.convertValues(source["generation"], GenerationRecord);
 	    }

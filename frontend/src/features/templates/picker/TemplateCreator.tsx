@@ -42,11 +42,13 @@ export function TemplateCreator({ onCreated, onClose, seed }: TemplateCreatorPro
   const [localRefs, setLocalRefs] = useState<string[]>(seed?.localRefsPrefill ?? []);
   const [urls, setURLs] = useState<string[]>(seed?.urlsPrefill ?? []);
   const [urlInput, setURLInput] = useState("");
+  const [includeStory, setIncludeStory] = useState(false);
   const generate = useGenerateTemplateFromAI();
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || !prompt.trim()) return;
+    const formats = includeStory ? ["feed", "story"] : ["feed"];
     generate.mutate(
       {
         name: name.trim(),
@@ -59,6 +61,7 @@ export function TemplateCreator({ onCreated, onClose, seed }: TemplateCreatorPro
         attachments: attachments.map((a) => ({ filename: a.filename, base64: a.base64 })),
         localRefs,
         urls,
+        formats,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       { onSuccess: (t) => onCreated(t) },
@@ -124,6 +127,21 @@ export function TemplateCreator({ onCreated, onClose, seed }: TemplateCreatorPro
                 "Describe the template: aesthetic, colors, typography, vibe, what each slide should communicate..."
               }
               className="w-full resize-y rounded-md bg-white/[0.05] px-2.5 py-2 text-[12.5px] leading-relaxed text-white outline-none ring-0.5 ring-white/[0.08] placeholder:text-white/30 focus:ring-white/20"
+            />
+          </label>
+
+          <label className="flex cursor-pointer items-center justify-between gap-2 rounded-md bg-white/[0.04] px-2.5 py-2 shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.06)]">
+            <span className="flex flex-col text-left">
+              <span className="text-[12.5px] font-medium text-white">Include story (9:16)</span>
+              <span className="text-[11px] text-white/45">
+                Claude also generates a vertical 1080×1920 variant per slide.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={includeStory}
+              onChange={(e) => setIncludeStory(e.target.checked)}
+              className="h-4 w-4 cursor-pointer accent-(--color-primary)"
             />
           </label>
 

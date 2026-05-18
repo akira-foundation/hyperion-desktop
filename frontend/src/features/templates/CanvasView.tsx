@@ -17,6 +17,9 @@ interface Props {
   onSlideChange?: (i: number) => void;
   onPreviewChange?: (open: boolean) => void;
   slideUrls?: string[];
+  formats?: string[];
+  activeFormat?: string;
+  onFormatChange?: (f: string) => void;
 }
 
 export function CanvasView({
@@ -26,6 +29,9 @@ export function CanvasView({
   onSlideChange,
   onPreviewChange,
   slideUrls,
+  formats,
+  activeFormat,
+  onFormatChange,
 }: Props) {
   const carousel = isCarousel(meta);
   const [viewMode, setViewMode] = useState<ViewMode>(carousel ? "grid" : "single");
@@ -84,6 +90,9 @@ export function CanvasView({
           onZoomOut={() => setZoomFactor((z) => Math.max(MIN_ZOOM, z / 1.2))}
           onFit={resetView}
           onPreview={() => setPreview(true)}
+          formats={formats}
+          activeFormat={activeFormat}
+          onFormatChange={onFormatChange}
         />
       )}
 

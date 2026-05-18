@@ -58,6 +58,20 @@ func (s *Store) ImportFromFolder(sourceDir, name, description, category, source 
 		size = template.Size{Width: 1080, Height: 1080}
 	}
 
+	formats := []template.Format{template.FormatFeed}
+	formatSizes := map[template.Format]template.Size{}
+	hasStory := false
+	for _, s := range slides {
+		if _, ok := s.Files[template.FormatStory]; ok {
+			hasStory = true
+			break
+		}
+	}
+	if hasStory {
+		formats = append(formats, template.FormatStory)
+		formatSizes[template.FormatStory] = template.Size{Width: 1080, Height: 1920}
+	}
+
 	t := &template.RuntimeTemplate{
 		ID:          uuid.NewString(),
 		Slug:        slug,
@@ -69,6 +83,8 @@ func (s *Store) ImportFromFolder(sourceDir, name, description, category, source 
 		Source:      source,
 		Slides:      slides,
 		Assets:      assets,
+		Formats:     formats,
+		FormatSizes: formatSizes,
 		CreatedAt:   time.Now().UTC(),
 	}
 
@@ -79,7 +95,10 @@ func (s *Store) ImportFromFolder(sourceDir, name, description, category, source 
 	return t, nil
 }
 
-var slideRe = regexp.MustCompile(`^slide-(\d+)\.html?$`)
+var (
+	slideFeedRe  = regexp.MustCompile(`^slide-(\d+)\.html?$`)
+	slideStoryRe = regexp.MustCompile(`^slide-(\d+)-story\.html?$`)
+)
 
 func copyTemplateFiles(src, dst string) ([]template.RuntimeSlide, []string, error) {
 	entries, err := os.ReadDir(src)
@@ -87,8 +106,10 @@ func copyTemplateFiles(src, dst string) ([]template.RuntimeSlide, []string, erro
 		return nil, nil, fmt.Errorf("read source: %w", err)
 	}
 
-	var slides []template.RuntimeSlide
+	feedByIndex := map[int]string{}
+	storyByIndex := map[int]string{}
 	var assets []string
+
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
@@ -101,17 +122,52 @@ func copyTemplateFiles(src, dst string) ([]template.RuntimeSlide, []string, erro
 		if err := copyFile(filepath.Join(src, name), filepath.Join(dst, name)); err != nil {
 			return nil, nil, fmt.Errorf("copy %s: %w", name, err)
 		}
-		if m := slideRe.FindStringSubmatch(strings.ToLower(name)); m != nil {
-			slides = append(slides, template.RuntimeSlide{Filename: name})
-		} else {
-			assets = append(assets, name)
+		lower := strings.ToLower(name)
+		if m := slideStoryRe.FindStringSubmatch(lower); m != nil {
+			idx, _ := atoi(m[1])
+			storyByIndex[idx-1] = name
+			continue
 		}
+		if m := slideFeedRe.FindStringSubmatch(lower); m != nil {
+			idx, _ := atoi(m[1])
+			feedByIndex[idx-1] = name
+			continue
+		}
+		assets = append(assets, name)
 	}
-	sort.Slice(slides, func(i, j int) bool { return slides[i].Filename < slides[j].Filename })
-	for i := range slides {
-		slides[i].Index = i
+
+	keys := make([]int, 0, len(feedByIndex))
+	for k := range feedByIndex {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	slides := make([]template.RuntimeSlide, 0, len(keys))
+	for i, k := range keys {
+		slide := template.RuntimeSlide{
+			Index:    i,
+			Filename: feedByIndex[k],
+		}
+		if storyName, ok := storyByIndex[k]; ok {
+			slide.Files = map[template.Format]string{
+				template.FormatFeed:  feedByIndex[k],
+				template.FormatStory: storyName,
+			}
+		}
+		slides = append(slides, slide)
 	}
 	return slides, assets, nil
+}
+
+func atoi(s string) (int, error) {
+	n := 0
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return 0, fmt.Errorf("not numeric: %q", s)
+		}
+		n = n*10 + int(c-'0')
+	}
+	return n, nil
 }
 
 func copyFile(src, dst string) error {

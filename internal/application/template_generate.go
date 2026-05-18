@@ -19,16 +19,26 @@ type Attachment struct {
 }
 
 type GenerateTemplateInput struct {
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	Prompt      string       `json:"prompt"`
-	Width       int          `json:"width"`
-	Height      int          `json:"height"`
-	SlideCount  int          `json:"slideCount"`
-	Category    string       `json:"category"`
-	Attachments []Attachment `json:"attachments"`
-	LocalRefs   []string     `json:"localRefs"`
-	URLs        []string     `json:"urls"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Prompt      string            `json:"prompt"`
+	Width       int               `json:"width"`
+	Height      int               `json:"height"`
+	SlideCount  int               `json:"slideCount"`
+	Category    string            `json:"category"`
+	Attachments []Attachment      `json:"attachments"`
+	LocalRefs   []string          `json:"localRefs"`
+	URLs        []string          `json:"urls"`
+	Formats     []template.Format `json:"formats,omitempty"`
+}
+
+func (in *GenerateTemplateInput) wantsStory() bool {
+	for _, f := range in.Formats {
+		if f == template.FormatStory {
+			return true
+		}
+	}
+	return false
 }
 
 func (s *TemplateService) GenerateFromAI(ctx context.Context, in GenerateTemplateInput) (*template.RuntimeTemplate, error) {
@@ -106,11 +116,16 @@ func buildGenerationRecord(in GenerateTemplateInput) *template.GenerationRecord 
 			attachmentNames = append(attachmentNames, a.Filename)
 		}
 	}
+	formats := in.Formats
+	if len(formats) == 0 {
+		formats = []template.Format{template.FormatFeed}
+	}
 	return &template.GenerationRecord{
 		Prompt:      in.Prompt,
 		URLs:        in.URLs,
 		LocalRefs:   in.LocalRefs,
 		Attachments: attachmentNames,
+		Formats:     formats,
 	}
 }
 
@@ -155,14 +170,27 @@ func buildTemplatePrompt(in GenerateTemplateInput, refPaths []string) string {
 	b.WriteString("FILES TO PRODUCE:\n")
 	if in.SlideCount > 1 {
 		for i := 1; i <= in.SlideCount; i++ {
-			b.WriteString(fmt.Sprintf("- slide-%d.html\n", i))
+			b.WriteString(fmt.Sprintf("- slide-%d.html (feed format, %dx%d)\n", i, in.Width, in.Height))
 		}
 	} else {
-		b.WriteString("- slide-1.html\n")
+		b.WriteString(fmt.Sprintf("- slide-1.html (feed format, %dx%d)\n", in.Width, in.Height))
+	}
+	if in.wantsStory() {
+		if in.SlideCount > 1 {
+			for i := 1; i <= in.SlideCount; i++ {
+				b.WriteString(fmt.Sprintf("- slide-%d-story.html (story format, 1080x1920)\n", i))
+			}
+		} else {
+			b.WriteString("- slide-1-story.html (story format, 1080x1920)\n")
+		}
 	}
 	b.WriteString("- styles.css (shared)\n\n")
 	b.WriteString("CONSTRAINTS:\n")
-	b.WriteString(fmt.Sprintf("- Viewport: %dx%d (set on html/body)\n", in.Width, in.Height))
+	b.WriteString(fmt.Sprintf("- Feed viewport: %dx%d (set on html/body)\n", in.Width, in.Height))
+	if in.wantsStory() {
+		b.WriteString("- Story viewport: 1080x1920 (fullscreen vertical)\n")
+		b.WriteString("- Story variants reuse styles.css; adapt layout for 9:16 (larger headings, vertical stacking, safe top/bottom margins for IG overlays)\n")
+	}
 	b.WriteString("- Self-contained: only external network resources allowed are Google Fonts via <link>\n")
 	b.WriteString("- Each slide imports styles.css\n")
 	b.WriteString("- No emojis\n")

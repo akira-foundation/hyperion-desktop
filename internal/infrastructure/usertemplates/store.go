@@ -121,6 +121,11 @@ func (s *Store) fileBelongs(t *template.RuntimeTemplate, filename string) bool {
 		if slide.Filename == filename {
 			return true
 		}
+		for _, f := range slide.Files {
+			if f == filename {
+				return true
+			}
+		}
 	}
 	for _, a := range t.Assets {
 		if a == filename {

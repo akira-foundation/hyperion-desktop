@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { AnyTemplateMeta } from "@/templates/types";
 import { InstagramFeed } from "./preview/InstagramFeed";
+import { InstagramStory } from "./preview/InstagramStory";
 
 interface PlatformPreviewProps {
   meta: AnyTemplateMeta;
@@ -138,6 +139,23 @@ function PlatformStage({
     return (
       <div className="flex flex-1 items-start justify-center px-6 py-8">
         <InstagramFeed
+          slideUrls={sources}
+          templateName={meta.name}
+          meta={meta}
+          payload={payload}
+          width={meta.size.width}
+          height={meta.size.height}
+          slideIndex={slideIndex}
+          onSlideChange={onSlideChange}
+        />
+      </div>
+    );
+  }
+
+  if (platform.key === "instagram-story") {
+    return (
+      <div className="flex flex-1 items-start justify-center px-6 py-8">
+        <InstagramStory
           slideUrls={sources}
           templateName={meta.name}
           meta={meta}

@@ -17,6 +17,7 @@ interface UserTemplateDetailProps {
 
 export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailProps) {
   const [slideIndex, setSlideIndex] = useState(0);
+  const [activeFormat, setActiveFormat] = useState<string>("feed");
   const baseURLQuery = useRenderBaseURL();
   const baseURL = baseURLQuery.data ?? "";
   const deleteMut = useDeleteUserTemplate();
@@ -31,10 +32,29 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
     deleteMut.mutate(t.id);
   }
 
-  const slideUrls = useMemo(
-    () => t.slides.map((s) => `${baseURL}/user-templates/${t.slug}/${s.filename}`),
-    [baseURL, t.slides, t.slug],
+  const formats = useMemo(
+    () => (t.formats && t.formats.length > 0 ? t.formats : ["feed"]),
+    [t.formats],
   );
+
+  const slideUrls = useMemo(
+    () =>
+      t.slides.map((s) => {
+        const file =
+          activeFormat !== "feed" && s.files && s.files[activeFormat]
+            ? s.files[activeFormat]
+            : s.filename;
+        return `${baseURL}/user-templates/${t.slug}/${file}`;
+      }),
+    [baseURL, t.slides, t.slug, activeFormat],
+  );
+
+  const formatSize = useMemo(() => {
+    if (activeFormat === "story") {
+      return t.formatSizes?.story ?? { width: 1080, height: 1920 };
+    }
+    return t.size;
+  }, [activeFormat, t.formatSizes, t.size]);
 
   const fakeMeta = useMemo(
     () => ({
@@ -44,12 +64,13 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
       name: t.name,
       description: t.description,
       category: t.category,
-      aspectRatio: aspectFromSize(t.size),
-      size: t.size,
+      aspectRatio: aspectFromSize(formatSize),
+      size: formatSize,
       schema: null as never,
       defaultProps: {} as never,
       defaultShared: {} as never,
       defaultSlides: t.slides as never,
+      _formatDeps: [activeFormat, formatSize.width, formatSize.height],
       minSlides: 1,
       maxSlides: 50,
       sharedSchema: null as never,
@@ -57,7 +78,7 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       component: (() => null) as any,
     }),
-    [t],
+    [t, activeFormat, formatSize.width, formatSize.height],
   );
 
   return (
@@ -132,6 +153,9 @@ export function UserTemplateDetail({ template: t, picker }: UserTemplateDetailPr
           slideIndex={slideIndex}
           onSlideChange={setSlideIndex}
           slideUrls={slideUrls}
+          formats={formats}
+          activeFormat={activeFormat}
+          onFormatChange={setActiveFormat}
         />
         <AIEditComposer templateId={t.id} />
       </div>

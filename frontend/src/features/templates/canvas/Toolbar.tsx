@@ -11,7 +11,16 @@ interface ToolbarProps {
   onZoomOut: () => void;
   onFit: () => void;
   onPreview: () => void;
+  formats?: string[];
+  activeFormat?: string;
+  onFormatChange?: (f: string) => void;
 }
+
+const FORMAT_LABELS: Record<string, string> = {
+  feed: "Feed",
+  story: "Story",
+  square: "Square",
+};
 
 export function Toolbar({
   carousel,
@@ -21,7 +30,11 @@ export function Toolbar({
   onZoomOut,
   onFit,
   onPreview,
+  formats,
+  activeFormat,
+  onFormatChange,
 }: ToolbarProps) {
+  const showFormats = formats && formats.length > 1 && activeFormat && onFormatChange;
   return (
     <div className="pointer-events-none absolute inset-x-0 top-3 z-10 flex items-center justify-between px-3">
       <div className="pointer-events-auto flex gap-1 rounded-xl bg-black/35 p-1 backdrop-blur-xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07)]">
@@ -47,6 +60,27 @@ export function Toolbar({
           <Smartphone className="h-3.5 w-3.5" />
         </ToolbarButton>
       </div>
+
+      {showFormats ? (
+        <div className="pointer-events-auto flex gap-1 rounded-xl bg-black/35 p-1 backdrop-blur-xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07)]">
+          {formats!.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => onFormatChange!(f)}
+              title={FORMAT_LABELS[f] ?? f}
+              className={cn(
+                "h-7 cursor-pointer rounded-[10px] px-2.5 text-[11px] font-medium uppercase tracking-wider transition-colors",
+                f === activeFormat
+                  ? "bg-white/[0.14] text-white"
+                  : "text-white/65 hover:bg-white/[0.08] hover:text-white",
+              )}
+            >
+              {FORMAT_LABELS[f] ?? f}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="pointer-events-auto flex items-center gap-1 rounded-xl bg-black/35 p-1 backdrop-blur-xl shadow-[inset_0_0_0_0.5px_rgba(255,255,255,0.07)]">
         <ToolbarButton onClick={onZoomOut} title="Zoom out">
